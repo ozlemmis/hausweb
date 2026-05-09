@@ -64,6 +64,14 @@ const IconCart = ({ active }: any) => (
   </svg>
 );
 
+const IconScan = ({ active }: any) => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" strokeWidth="1.5"
+    stroke={active?t.amber:t.textMuted} strokeLinecap="square" strokeLinejoin="miter">
+    <path d="M2 2h4M2 2v4M20 2h-4M20 2v4M2 20h4M2 20v-4M20 20h-4M20 20v-4"/>
+    <line x1="2" y1="11" x2="20" y2="11" stroke={active?t.amber:t.textMuted} strokeWidth="1.5"/>
+  </svg>
+);
+
 const IconClipboard = ({ active }: any) => (
   <svg
     width="22"
@@ -205,7 +213,35 @@ const CSS = `
 .login-error{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:#DC2626;padding:10px 14px;border:1.5px solid #DC2626;background:#FEF2F2;animation:fe .2s ease}
 @keyframes fe{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .loading-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;color:#AAAAAA}
-`;
+.scan-wrap{min-height:100vh;background:#111111;display:flex;flex-direction:column;position:relative}
+.scan-viewport{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#haus-scanner{width:100%;height:100%}
+#haus-scanner video{width:100%!important;height:100%!important;object-fit:cover!important}
+.scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scan-frame{position:relative;width:260px;height:180px}
+.scan-corner{position:absolute;width:24px;height:24px;border-color:#F5A623;border-style:solid}
+.scan-corner.tl{top:0;left:0;border-width:3px 0 0 3px}
+.scan-corner.tr{top:0;right:0;border-width:3px 3px 0 0}
+.scan-corner.bl{bottom:0;left:0;border-width:0 0 3px 3px}
+.scan-corner.br{bottom:0;right:0;border-width:0 3px 3px 0}
+.scan-line{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#F5A623,transparent);animation:scanMove 2s ease-in-out infinite}
+@keyframes scanMove{0%{top:8px;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:calc(100% - 8px);opacity:0}}
+.scan-hint{position:absolute;bottom:40px;left:0;right:0;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.1em;text-transform:uppercase}
+.scan-close{position:absolute;top:52px;right:20px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 14px;cursor:pointer;border-radius:0;z-index:10;transition:all .15s}
+.scan-close:hover{background:rgba(255,255,255,0.2)}
+.scan-loading{min-height:100vh;background:#111111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.scan-spinner{width:32px;height:32px;border:2px solid rgba(245,166,35,0.2);border-top-color:#F5A623;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.product-page{min-height:100vh;background:#fff;display:flex;flex-direction:column;padding-bottom:120px}
+.product-image{width:100%;height:260px;object-fit:contain;background:#F5F5F5;display:block}
+.product-image-placeholder{width:100%;height:200px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:48px}
+.nutriscore-bar{display:flex;gap:3px;align-items:flex-end}
+.nutriscore-cell{display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-weight:500;border-radius:0;transition:all .2s;color:#fff}
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:24px}
+.popup-card{background:#fff;width:100%;max-width:480px;padding:24px}
+.sticky-actions{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-top:1.5px solid #111111;padding:16px 24px;display:flex;gap:10px;z-index:100}
+.not-found-wrap{min-height:100vh;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}`
+;
 
 function LoginPage({ onLogin }: any) {
   const [email, setEmail] = useState(''),
@@ -1124,124 +1160,503 @@ function VerwaltungTab({ user, profiles }: any) {
   );
 }
 
-function AppShell({ user, profiles, onSignOut }: any) {
-  const [tab, setTab] = useState('shopping');
-  const me = profiles.find((p: any) => p.id === user.id) || {
-    id: user.id,
-    label: 'ME',
-    color: '#F5A623',
-  };
+function NutriScore({ grade }: any) {
+  const grades = ['a','b','c','d','e'];
+  const colors: any = {a:'#1a7a1a',b:'#85bb2f',c:'#f5a623',d:'#e67e22',e:'#dc2626'};
+  const labels: any = {a:'A',b:'B',c:'C',d:'D',e:'E'};
+  if (!grade) return null;
+  const g = grade.toLowerCase();
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#fff',
-        fontFamily: "'DM Mono',monospace",
-        color: '#111111',
-      }}
-    >
-      <div
-        style={{ maxWidth: 520, margin: '0 auto', padding: '40px 24px 120px' }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            marginBottom: 40,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <HausLogo profiles={profiles} size={44} />
-            <div>
-              <div
-                style={{
-                  fontFamily: "'DM Mono',monospace",
-                  fontSize: 28,
-                  fontWeight: 300,
-                  letterSpacing: '-0.04em',
-                  color: '#111111',
-                  lineHeight: 1,
-                }}
-              >
-                haus
-              </div>
-              <div className="label" style={{ marginTop: 7 }}>
-                {tab === 'shopping' ? 'einkaufsliste' : 'verwaltung'}
-              </div>
+    <div>
+      <div className="label" style={{marginBottom:8}}>nutri-score</div>
+      <div className="nutriscore-bar">
+        {grades.map(letter=>{
+          const isActive = letter===g;
+          return(
+            <div key={letter} className="nutriscore-cell"
+              style={{
+                background:colors[letter],
+                width: isActive?38:28,
+                height: isActive?42:32,
+                fontSize: isActive?18:12,
+                opacity: isActive?1:0.35,
+              }}>
+              {labels[letter]}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const LABEL_ICONS: any = {
+  'organic':'🌿', 'bio':'🌿', 'vegan':'🌱', 'vegetarian':'🥦',
+  'gluten-free':'🌾', 'gluten free':'🌾', 'halal':'☪️', 'kosher':'✡️',
+  'fair-trade':'🤝', 'fair trade':'🤝', 'no-additives':'✅',
+  'low-sugar':'🍬', 'low sugar':'🍬', 'lactose-free':'🥛',
+};
+
+const SHELF_LIFE: any = {
+  'dairy':7, 'milk':7, 'yogurt':14, 'cheese':21,
+  'meat':3, 'fish':2, 'seafood':2,
+  'bread':5, 'bakery':5,
+  'fresh produce':5, 'vegetables':5, 'fruits':5,
+  'frozen':180, 'frozen foods':180,
+  'pasta':730, 'rice':730, 'cereals':365,
+  'canned':730, 'canned goods':730,
+  'beverages':180, 'drinks':180,
+  'snacks':90, 'confectionery':180,
+  'default':30,
+};
+
+function ScanTab({ user, profiles, onGoToShopping }: any) {
+  const [state, setState] = useState<'scanning'|'loading'|'result'|'not_found'>('scanning');
+  const [product, setProduct] = useState<any>(null);
+  const [barcode, setBarcode] = useState('');
+  const [popup, setPopup] = useState<'already'|'success'|null>(null);
+  const [entries, setEntries] = useState<any[]>([]);
+  const scannerRef = useRef<any>(null);
+  const scanStarted = useRef(false);
+
+  // Load current shopping list to check duplicates
+  useEffect(()=>{
+    sb.from('shopping_list_entries').select('*').eq('is_checked',false)
+      .then(({data}:any)=>setEntries(data||[]));
+  },[]);
+
+  // Start scanner
+  useEffect(()=>{
+    if (state!=='scanning') return;
+    if (scanStarted.current) return;
+    scanStarted.current = true;
+
+    import('html5-qrcode').then(({Html5Qrcode})=>{
+      const scanner = new Html5Qrcode('haus-scanner');
+      scannerRef.current = scanner;
+      scanner.start(
+        { facingMode:'environment' },
+        { fps:10, qrbox:{ width:240, height:160 }, supportedScanTypes:[0] },
+        async (code:string)=>{
+          try { await scanner.stop(); } catch(e){}
+          scanStarted.current = false;
+          setBarcode(code);
+          setState('loading');
+          fetchProduct(code);
+        },
+        ()=>{}
+      ).catch(()=>{});
+    });
+
+    return ()=>{
+      if (scannerRef.current) {
+        try { scannerRef.current.stop(); } catch(e){}
+        scanStarted.current = false;
+      }
+    };
+  },[state]);
+
+  const stopScanner = async () => {
+    if (scannerRef.current) {
+      try { await scannerRef.current.stop(); } catch(e){}
+      scanStarted.current = false;
+    }
+  };
+
+  const fetchProduct = async (code:string) => {
+    try {
+      const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}?fields=product_name,brands,categories,image_url,nutriscore_grade,nova_group,nutriments,allergens,ingredients_text,labels`);
+      const data = await res.json();
+      if (data.status===1 && data.product) {
+        setProduct(data.product);
+        setState('result');
+      } else {
+        setState('not_found');
+      }
+    } catch(e) {
+      setState('not_found');
+    }
+  };
+
+  const handleClose = async () => {
+    await stopScanner();
+    onGoToShopping();
+  };
+
+  const handleRescan = async () => {
+    setProduct(null);
+    setBarcode('');
+    setState('scanning');
+  };
+
+  const handleAddToList = async () => {
+    const name = product.product_name || 'Unknown Product';
+    const alreadyOn = entries.some((e:any)=>
+      e.name.toLowerCase()===name.toLowerCase() ||
+      (product.barcode && e.barcode===barcode)
+    );
+    if (alreadyOn) { setPopup('already'); return; }
+    await doAddToList();
+  };
+
+  const doAddToList = async () => {
+    const name = product.product_name || 'Unknown Product';
+    const icon = '🛒';
+
+    // Upsert into shopping_items dictionary with enriched data
+    const { data:existing } = await sb.from('shopping_items')
+      .select('*').eq('name',name).maybeSingle();
+
+    let itemId: any;
+    const enriched = {
+      name, icon, brand: product.brands||null,
+      image_url: product.image_url||null,
+      nutriscore: product.nutriscore_grade||null,
+      nova_group: product.nova_group||null,
+      nutriments: product.nutriments||null,
+      allergens: product.allergens||null,
+      ingredients: product.ingredients_text||null,
+      labels: product.labels||null,
+      barcode: barcode||null,
+    };
+
+    if (existing) {
+      itemId = existing.id;
+      await sb.from('shopping_items').update(enriched).eq('id',existing.id);
+    } else {
+      const {data:ni} = await sb.from('shopping_items').insert(enriched).select().single();
+      itemId = ni?.id;
+    }
+
+    await sb.from('shopping_list_entries').insert({
+      shopping_item_id: itemId,
+      name, icon, quantity:1, added_by:user.id,
+    });
+
+    setPopup('success');
+  };
+
+  // ── Scanning state ──
+  if (state==='scanning') return (
+    <div className="scan-wrap">
+      <button className="scan-close" onClick={handleClose}>✕ close</button>
+      <div className="scan-viewport">
+        <div id="haus-scanner" style={{width:'100%',height:'100%'}}/>
+        <div className="scan-overlay">
+          <div className="scan-frame">
+            <div className="scan-corner tl"/>
+            <div className="scan-corner tr"/>
+            <div className="scan-corner bl"/>
+            <div className="scan-corner br"/>
+            <div className="scan-line"/>
+          </div>
+        </div>
+        <div className="scan-hint">point at a barcode</div>
+      </div>
+    </div>
+  );
+
+  // ── Loading state ──
+  if (state==='loading') return (
+    <div className="scan-loading">
+      <div className="scan-spinner"/>
+      <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:'rgba(255,255,255,0.5)',
+        letterSpacing:'.1em',textTransform:'uppercase'}}>looking up product...</div>
+    </div>
+  );
+
+  // ── Not found state ──
+  if (state==='not_found') return (
+    <div className="not-found-wrap">
+      <div style={{fontSize:48,marginBottom:20}}>🔍</div>
+      <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:'#AAAAAA',
+        letterSpacing:'.12em',textTransform:'uppercase',marginBottom:12}}>product not found</div>
+      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:'#555555',
+        lineHeight:1.6,marginBottom:36,maxWidth:280}}>
+        This barcode isn't in the Open Food Facts database yet.
+      </div>
+      <button onClick={handleClose}
+        style={{width:'100%',maxWidth:280,height:52,background:'#111111',color:'#fff',
+          border:'1.5px solid #111111',fontFamily:"'DM Mono',monospace",fontSize:12,
+          fontWeight:500,letterSpacing:'.18em',textTransform:'uppercase',cursor:'pointer',
+          borderRadius:0,marginBottom:10}}
+        onMouseEnter={e=>{(e.currentTarget as any).style.background=t.amber;(e.currentTarget as any).style.borderColor=t.amber;}}
+        onMouseLeave={e=>{(e.currentTarget as any).style.background='#111111';(e.currentTarget as any).style.borderColor='#111111';}}>
+        return to shopping list
+      </button>
+      <button onClick={handleRescan}
+        style={{width:'100%',maxWidth:280,height:44,background:'none',color:'#AAAAAA',
+          border:'1.5px solid #E0E0E0',fontFamily:"'DM Mono',monospace",fontSize:11,
+          letterSpacing:'.12em',textTransform:'uppercase',cursor:'pointer',borderRadius:0}}>
+        scan again
+      </button>
+    </div>
+  );
+
+  // ── Result state ──
+  const p = product;
+  const name = p.product_name || 'Unknown Product';
+  const brand = p.brands || '';
+  const category = p.categories?.split(',')[0]?.trim() || '';
+  const labelList = p.labels ? p.labels.split(',').map((l:string)=>l.trim().toLowerCase()).filter(Boolean) : [];
+  const nutriments = p.nutriments || {};
+
+  const nutriRows = [
+    { label:'Energy',         val: nutriments['energy-kcal_100g'], unit:'kcal' },
+    { label:'Fat',            val: nutriments['fat_100g'],          unit:'g' },
+    { label:'of which saturated', val: nutriments['saturated-fat_100g'], unit:'g' },
+    { label:'Carbohydrates',  val: nutriments['carbohydrates_100g'],unit:'g' },
+    { label:'of which sugars',val: nutriments['sugars_100g'],       unit:'g' },
+    { label:'Fibre',          val: nutriments['fiber_100g'],         unit:'g' },
+    { label:'Protein',        val: nutriments['proteins_100g'],      unit:'g' },
+    { label:'Salt',           val: nutriments['salt_100g'],          unit:'g' },
+  ].filter(r=>r.val!=null);
+
+  return (
+    <div className="product-page">
+      {/* Product image */}
+      {p.image_url
+        ?<img src={p.image_url} className="product-image" alt={name}/>
+        :<div className="product-image-placeholder">🛒</div>
+      }
+
+      <div style={{padding:'24px 20px 0',maxWidth:520,margin:'0 auto',width:'100%'}}>
+
+        {/* Name + brand */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:22,fontWeight:600,
+            letterSpacing:'-0.02em',color:'#111111',lineHeight:1.2,marginBottom:6}}>
+            {name}
+          </div>
+          {brand&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:'#AAAAAA',
+            letterSpacing:'.1em',textTransform:'uppercase'}}>{brand}</div>}
+          {category&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:'#D4890A',
+            letterSpacing:'.08em',textTransform:'uppercase',marginTop:4}}>{category}</div>}
+        </div>
+
+        {/* Divider */}
+        <div style={{height:1,background:'#E0E0E0',marginBottom:20}}/>
+
+        {/* Labels */}
+        {labelList.length>0&&(
+          <div style={{marginBottom:20}}>
+            <div className="label" style={{marginBottom:10}}>labels</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+              {labelList.map((l:string,i:number)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:5,
+                  padding:'5px 10px',border:'1.5px solid #E0E0E0',
+                  fontFamily:"'DM Sans',sans-serif",fontSize:12,color:'#555555'}}>
+                  <span>{LABEL_ICONS[l]||'🏷️'}</span>
+                  <span>{l}</span>
+                </div>
+              ))}
             </div>
           </div>
-          <div style={{ textAlign: 'right', paddingTop: 4 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 7,
-                justifyContent: 'flex-end',
-                marginBottom: 7,
-              }}
-            >
-              <div className="live-dot" />
-              <span className="label">live sync</span>
+        )}
+
+        {/* Nutriscore */}
+        {p.nutriscore_grade&&(
+          <div style={{marginBottom:20}}>
+            <NutriScore grade={p.nutriscore_grade}/>
+          </div>
+        )}
+
+        {/* Divider */}
+        {(labelList.length>0||p.nutriscore_grade)&&
+          <div style={{height:1,background:'#E0E0E0',marginBottom:20}}/>}
+
+        {/* Nutrition table */}
+        {nutriRows.length>0&&(
+          <div style={{marginBottom:20}}>
+            <div className="label" style={{marginBottom:10}}>nutrition per 100g</div>
+            <div style={{border:'1.5px solid #E0E0E0'}}>
+              {nutriRows.map((r,i)=>(
+                <div key={i} style={{display:'flex',justifyContent:'space-between',
+                  alignItems:'center',padding:'9px 12px',
+                  borderBottom:i<nutriRows.length-1?'1px solid #E0E0E0':'none',
+                  background:r.label.startsWith('of which')?'#FAFAFA':'#fff'}}>
+                  <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,
+                    color:r.label.startsWith('of which')?'#AAAAAA':'#111111',
+                    paddingLeft:r.label.startsWith('of which')?12:0}}>
+                    {r.label}
+                  </span>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:'#111111'}}>
+                    {typeof r.val==='number'?r.val.toFixed(1):r.val}{r.unit}
+                  </span>
+                </div>
+              ))}
             </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 7,
-                justifyContent: 'flex-end',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: '50%',
-                    background: me.color,
-                  }}
-                />
-                <span className="label" style={{ color: '#555555' }}>
-                  {me.label}
-                </span>
-              </div>
-              <button className="signout-btn" onClick={onSignOut}>
-                out
+          </div>
+        )}
+
+        {/* Ingredients */}
+        {p.ingredients_text&&(
+          <div style={{marginBottom:20}}>
+            <div className="label" style={{marginBottom:8}}>ingredients</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:'#555555',
+              lineHeight:1.7}}>
+              {p.ingredients_text}
+            </div>
+          </div>
+        )}
+
+        {/* Allergens */}
+        {p.allergens&&p.allergens.length>0&&(
+          <div style={{marginBottom:20}}>
+            <div className="label" style={{marginBottom:8,color:t.urgent}}>allergens</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:t.urgent,
+              lineHeight:1.7,padding:'10px 12px',border:`1.5px solid ${t.urgent}`,
+              background:'#FEF2F2'}}>
+              {p.allergens.replace(/en:/g,'').replace(/,/g,', ')}
+            </div>
+          </div>
+        )}
+
+        {/* Bottom spacer so content clears sticky buttons */}
+        <div style={{height:40}}/>
+      </div>
+
+      {/* Sticky bottom actions */}
+      <div className="sticky-actions">
+        <button onClick={handleClose}
+          style={{flex:1,height:48,background:'none',color:'#111111',
+            border:'1.5px solid #111111',fontFamily:"'DM Mono',monospace",fontSize:11,
+            fontWeight:500,letterSpacing:'.12em',textTransform:'uppercase',
+            cursor:'pointer',borderRadius:0}}>
+          return to list
+        </button>
+        <button onClick={handleAddToList}
+          style={{flex:2,height:48,background:t.amber,color:'#fff',
+            border:`1.5px solid ${t.amber}`,fontFamily:"'DM Mono',monospace",fontSize:11,
+            fontWeight:500,letterSpacing:'.14em',textTransform:'uppercase',
+            cursor:'pointer',borderRadius:0}}>
+          add to shopping list
+        </button>
+      </div>
+
+      {/* Already on list popup */}
+      {popup==='already'&&(
+        <div className="popup-overlay">
+          <div className="popup-card">
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:t.amber,
+              letterSpacing:'.12em',textTransform:'uppercase',marginBottom:8}}>
+              already on list
+            </div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:'#111111',
+              marginBottom:20,lineHeight:1.5}}>
+              <strong>{name}</strong> is already in your shopping list.
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>{setPopup(null);doAddToList();}}
+                style={{flex:1,height:44,background:'none',border:'1.5px solid #E0E0E0',
+                  color:'#555555',fontFamily:"'DM Mono',monospace",fontSize:10,
+                  letterSpacing:'.1em',textTransform:'uppercase',cursor:'pointer',borderRadius:0}}>
+                add one more
+              </button>
+              <button onClick={()=>setPopup(null)}
+                style={{flex:1,height:44,background:t.amber,color:'#fff',
+                  border:`1.5px solid ${t.amber}`,fontFamily:"'DM Mono',monospace",fontSize:10,
+                  fontWeight:500,letterSpacing:'.1em',textTransform:'uppercase',
+                  cursor:'pointer',borderRadius:0}}>
+                ok, that's good
               </button>
             </div>
           </div>
         </div>
-        {tab === 'shopping' && <ShoppingTab user={user} profiles={profiles} />}
-        {tab === 'verwaltung' && (
-          <VerwaltungTab user={user} profiles={profiles} />
-        )}
+      )}
+
+      {/* Success popup */}
+      {popup==='success'&&(
+        <div className="popup-overlay" onClick={()=>{setPopup(null);onGoToShopping();}}>
+          <div className="popup-card">
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:t.success,
+              letterSpacing:'.12em',textTransform:'uppercase',marginBottom:8}}>
+              added to list
+            </div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:'#111111',
+              marginBottom:20,lineHeight:1.5}}>
+              <strong>{name}</strong> has been added to your shopping list.
+            </div>
+            <button onClick={()=>{setPopup(null);onGoToShopping();}}
+              style={{width:'100%',height:48,background:t.amber,color:'#fff',
+                border:`1.5px solid ${t.amber}`,fontFamily:"'DM Mono',monospace",fontSize:11,
+                fontWeight:500,letterSpacing:'.14em',textTransform:'uppercase',
+                cursor:'pointer',borderRadius:0}}>
+              go to shopping list
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AppShell({ user, profiles, onSignOut }: any) {
+  const [tab,setTab]=useState("shopping");
+  const me=profiles.find((p:any)=>p.id===user.id)||{id:user.id,label:"ME",color:t.amberVivid};
+
+  return(
+    <div style={{minHeight:"100vh",background:tab==="scan"?"#111111":"#fff",fontFamily:"'DM Mono',monospace",color:"#111111"}}>
+
+      {/* Header — hidden on scan tab */}
+      {tab!=="scan"&&(
+        <div style={{maxWidth:520,margin:"0 auto",padding:"40px 24px 0"}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:40}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <HausLogo profiles={profiles} size={44}/>
+              <div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:28,fontWeight:300,letterSpacing:"-0.04em",color:"#111111",lineHeight:1}}>haus</div>
+                <div className="label" style={{marginTop:7}}>{tab==="shopping"?"einkaufsliste":"verwaltung"}</div>
+              </div>
+            </div>
+            <div style={{textAlign:"right",paddingTop:4}}>
+              <div style={{display:"flex",alignItems:"center",gap:7,justifyContent:"flex-end",marginBottom:7}}>
+                <div className="live-dot"/><span className="label">live sync</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:7,justifyContent:"flex-end"}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <div style={{width:7,height:7,borderRadius:"50%",background:me.color}}/>
+                  <span className="label" style={{color:"#555555"}}>{me.label}</span>
+                </div>
+                <button className="signout-btn" onClick={onSignOut}>out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab content */}
+      <div style={{maxWidth:520,margin:"0 auto",padding:tab==="scan"?"0":"0 24px 120px"}}>
+        {tab==="shopping"&&<ShoppingTab user={user} profiles={profiles}/>}
+        {tab==="verwaltung"&&<VerwaltungTab user={user} profiles={profiles}/>}
       </div>
-      <nav className="bottom-nav">
-        <button
-          className={`nav-tab${tab === 'shopping' ? ' active' : ''}`}
-          onClick={() => setTab('shopping')}
-        >
-          <IconCart active={tab === 'shopping'} />
-          <span
-            className="nav-label"
-            style={{ color: tab === 'shopping' ? '#D4890A' : '#AAAAAA' }}
-          >
-            einkauf
-          </span>
-        </button>
-        <button
-          className={`nav-tab${tab === 'verwaltung' ? ' active' : ''}`}
-          onClick={() => setTab('verwaltung')}
-        >
-          <IconClipboard active={tab === 'verwaltung'} />
-          <span
-            className="nav-label"
-            style={{ color: tab === 'verwaltung' ? '#D4890A' : '#AAAAAA' }}
-          >
-            verwaltung
-          </span>
-        </button>
-      </nav>
+
+      {/* Scan tab renders full screen */}
+      {tab==="scan"&&(
+        <ScanTab
+          user={user}
+          profiles={profiles}
+          onGoToShopping={()=>setTab("shopping")}
+        />
+      )}
+
+      {/* Bottom nav — hidden while scanning */}
+      {tab!=="scan"&&(
+        <nav className="bottom-nav">
+          <button className={`nav-tab${tab==="shopping"?" active":""}`} onClick={()=>setTab("shopping")}>
+            <IconCart active={tab==="shopping"}/>
+            <span className="nav-label" style={{color:tab==="shopping"?t.amber:t.textMuted}}>einkauf</span>
+          </button>
+          <button className={`nav-tab${tab==="scan"?" active":""}`} onClick={()=>setTab("scan")}>
+            <IconScan active={tab==="scan"}/>
+            <span className="nav-label" style={{color:tab==="scan"?t.amber:t.textMuted}}>scan</span>
+          </button>
+          <button className={`nav-tab${tab==="verwaltung"?" active":""}`} onClick={()=>setTab("verwaltung")}>
+            <IconClipboard active={tab==="verwaltung"}/>
+            <span className="nav-label" style={{color:tab==="verwaltung"?t.amber:t.textMuted}}>verwaltung</span>
+          </button>
+        </nav>
+      )}
     </div>
   );
 }
