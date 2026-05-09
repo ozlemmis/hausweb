@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" fill="none">
   <path d="M22 3.5 L42.5 20.2 L39.5 20.2 L39.5 40.5 L5.5 40.5 L5.5 20.2 L2.5 20.2 Z"
-      stroke="#111111" stroke-width="2.4" stroke-linejoin="miter" stroke-linecap="square"/>
-        <clipPath id="hc">
-            <path d="M22 3.5 L42.5 20.2 L39.5 20.2 L39.5 40.5 L5.5 40.5 L5.5 20.2 L2.5 20.2 Z"/>
-              </clipPath>
-                <g clip-path="url(#hc)">
-                    <circle cx="17" cy="33" r="7" fill="#F5A623" opacity="0.9"/>
-                        <circle cx="27" cy="33" r="7" fill="#3B82F6" opacity="0.9"/>
-                          </g>
-                          </svg>
+    stroke="#111111" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="square"/>
+  <clipPath id="hc">
+    <path d="M22 3.5 L42.5 20.2 L39.5 20.2 L39.5 40.5 L5.5 40.5 L5.5 20.2 L2.5 20.2 Z"/>
+  </clipPath>
+  <g clip-path="url(#hc)">
+    <circle cx="17" cy="33" r="7" fill="#F5A623" opacity="0.9"/>
+    <circle cx="27" cy="33" r="7" fill="#3B82F6" opacity="0.9"/>
+  </g>
+</svg>
