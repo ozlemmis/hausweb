@@ -83,7 +83,7 @@ const IconClipboard = ({ active }: any) => (
 function HausLogo({ profiles = [], size = 44 }: any) {
   const s = size,
     cx = s / 2,
-    stroke = s * 0.055;
+    stroke=1.5;
   const rp = s * 0.08,
     rl = s * 0.04,
     rr = s * 0.96,
