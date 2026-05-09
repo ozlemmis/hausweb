@@ -1197,20 +1197,8 @@ const LABEL_ICONS: any = {
   'low-sugar':'🍬', 'low sugar':'🍬', 'lactose-free':'🥛',
 };
 
-const SHELF_LIFE: any = {
-  'dairy':7, 'milk':7, 'yogurt':14, 'cheese':21,
-  'meat':3, 'fish':2, 'seafood':2,
-  'bread':5, 'bakery':5,
-  'fresh produce':5, 'vegetables':5, 'fruits':5,
-  'frozen':180, 'frozen foods':180,
-  'pasta':730, 'rice':730, 'cereals':365,
-  'canned':730, 'canned goods':730,
-  'beverages':180, 'drinks':180,
-  'snacks':90, 'confectionery':180,
-  'default':30,
-};
 
-function ScanTab({ user, profiles, onGoToShopping }: any) {
+function ScanTab({ user, onGoToShopping }: any) {
   const [state, setState] = useState<'scanning'|'loading'|'result'|'not_found'>('scanning');
   const [product, setProduct] = useState<any>(null);
   const [barcode, setBarcode] = useState('');
@@ -1236,7 +1224,7 @@ function ScanTab({ user, profiles, onGoToShopping }: any) {
       scannerRef.current = scanner;
       scanner.start(
         { facingMode:'environment' },
-        { fps:10, qrbox:{ width:240, height:160 }, supportedScanTypes:[0] },
+        { fps:10, qrbox:{ width:240, height:160 } },
         async (code:string)=>{
           try { await scanner.stop(); } catch(e){}
           scanStarted.current = false;
