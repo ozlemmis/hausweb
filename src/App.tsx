@@ -908,10 +908,22 @@ function VerwaltungTab({ user, profiles }: any) {
     setInput("");ref.current?.focus();
   };
 
-  const grab=(id:any)=>sb.from("tasks").update({status:"grabbed",grabbed_by:user.id,grabbed_at:new Date().toISOString()}).eq("id",id);
-  const drop=(id:any)=>sb.from("tasks").update({status:"open",grabbed_by:null,grabbed_at:null}).eq("id",id);
-  const done=(id:any)=>sb.from("tasks").update({status:"done",completed_at:new Date().toISOString()}).eq("id",id);
-  const reopen=(id:any)=>sb.from("tasks").update({status:"open",grabbed_by:null,grabbed_at:null,completed_at:null}).eq("id",id);
+  const grab=async(id:any)=>{
+    const {error}=await sb.from("tasks").update({status:"grabbed",grabbed_by:user.id,grabbed_at:new Date().toISOString()}).eq("id",id);
+    if(error) console.error("grab error:",error.message);
+  };
+  const drop=async(id:any)=>{
+    const {error}=await sb.from("tasks").update({status:"open",grabbed_by:null,grabbed_at:null}).eq("id",id);
+    if(error) console.error("drop error:",error.message);
+  };
+  const done=async(id:any)=>{
+    const {error}=await sb.from("tasks").update({status:"done",completed_at:new Date().toISOString()}).eq("id",id);
+    if(error) console.error("done error:",error.message);
+  };
+  const reopen=async(id:any)=>{
+    const {error}=await sb.from("tasks").update({status:"open",grabbed_by:null,grabbed_at:null,completed_at:null}).eq("id",id);
+    if(error) console.error("reopen error:",error.message);
+  };
   const clearDone=()=>{const ids=tasks.filter((t:any)=>t.status==="done").map((t:any)=>t.id);if(ids.length)sb.from("tasks").delete().in("id",ids);};
 
   const sbc=(task:any)=>{
