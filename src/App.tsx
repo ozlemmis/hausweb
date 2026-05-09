@@ -453,7 +453,7 @@ function ShoppingTab({ user, profiles }: any) {
     [entries, setEntries] = useState<any[]>([]);
   const [input, setInput] = useState(''),
     [qty, setQty] = useState(1);
-  const [sugs, setSugs] = useState<any[]>([]),
+  const [sugs, setSugs] = useState<any[]>([]);
   const [busy, setBusy] = useState(true);
   const ref = useRef<any>(null);
 
@@ -571,7 +571,7 @@ function ShoppingTab({ user, profiles }: any) {
         setItems((p: any[]) => [...p, ni]);
       }
     }
-    const { data: entry } = await sb
+    await sb
       .from('shopping_list_entries')
       .insert({
         shopping_item_id: itemId,
