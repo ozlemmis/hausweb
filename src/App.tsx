@@ -339,6 +339,115 @@ function LoginPage({ onLogin }: any) {
   );
 }
 
+function timeAgo(d: any) {
+  if (!d) return "";
+  const mins = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function ShoppingItemRow({ entry, profile, onBought, onUpdate, onDelete }: any) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(entry.name);
+  const [qty, setQty] = useState(entry.quantity);
+  const ref = useRef<any>(null);
+
+  useEffect(() => { if (editing) ref.current?.focus(); }, [editing]);
+
+  const save = () => {
+    if (name.trim() && (name.trim() !== entry.name || qty !== entry.quantity)) {
+      onUpdate({ name: name.trim(), quantity: qty });
+    }
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setName(entry.name); setQty(entry.quantity); setEditing(false);
+  };
+
+  if (editing) return (
+    <div style={{display:"flex",alignItems:"center",gap:8,padding:"13px 0 24px",
+      borderBottom:"1px solid #E0E0E0",position:"relative",background:"#FFFDF7",
+      borderLeft:"2.5px solid #D4890A",paddingLeft:10}}>
+      <div style={{width:36,height:36,border:"1.5px solid #D4890A",background:"#FFF4E0",
+        display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+        {entry.icon}
+      </div>
+      <input ref={ref} value={name} onChange={e=>setName(e.target.value)}
+        onKeyDown={(e:any)=>{if(e.key==="Enter")save();if(e.key==="Escape")cancel();}}
+        onBlur={save}
+        style={{flex:1,minWidth:0,height:32,padding:"0 8px",background:"#FFF4E0",
+          border:"1.5px solid #D4890A",color:"#111111",fontFamily:"'DM Sans',sans-serif",
+          fontSize:15,fontWeight:500,outline:"none",borderRadius:0,letterSpacing:"-.01em"}}/>
+      <button onMouseDown={e=>e.preventDefault()} onClick={()=>setQty((q:number)=>Math.max(1,q-1))}
+        style={{width:28,height:28,background:"none",border:"1.5px solid #E0E0E0",color:"#111111",
+          fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+          borderRadius:0,flexShrink:0}}>−</button>
+      <div style={{width:30,height:28,display:"flex",alignItems:"center",justifyContent:"center",
+        border:"1.5px solid #E0E0E0",borderLeft:"none",borderRight:"none",
+        fontFamily:"'DM Mono',monospace",fontSize:13,color:"#111111",flexShrink:0}}>{qty}</div>
+      <button onMouseDown={e=>e.preventDefault()} onClick={()=>setQty((q:number)=>q+1)}
+        style={{width:28,height:28,background:"none",border:"1.5px solid #E0E0E0",color:"#111111",
+          fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+          borderRadius:0,flexShrink:0}}>+</button>
+      <button onMouseDown={e=>e.preventDefault()} onClick={()=>{setEditing(false);onDelete();}}
+        style={{height:28,padding:"0 10px",background:"none",border:"1.5px solid #E0E0E0",
+          color:"#AAAAAA",fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:500,
+          letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer",borderRadius:0,
+          flexShrink:0,transition:"all .12s"}}
+        onMouseEnter={e=>{(e.target as any).style.borderColor="#DC2626";(e.target as any).style.color="#DC2626";}}
+        onMouseLeave={e=>{(e.target as any).style.borderColor="#E0E0E0";(e.target as any).style.color="#AAAAAA";}}>
+        delete
+      </button>
+      <span style={{position:"absolute",bottom:6,left:12,fontFamily:"'DM Mono',monospace",
+        fontSize:9,color:"#AAAAAA",letterSpacing:".08em"}}>
+        enter to save · esc to cancel · tap away to save
+      </span>
+    </div>
+  );
+
+  return (
+    <div onClick={()=>setEditing(true)} style={{display:"flex",alignItems:"center",gap:12,
+      padding:"13px 0",borderBottom:"1px solid #E0E0E0",cursor:"pointer",transition:"background .12s"}}
+      onMouseEnter={e=>(e.currentTarget.style.background="#FAFAFA")}
+      onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
+      <div style={{width:36,height:36,border:"1.5px solid #E0E0E0",background:"#F5F5F5",
+        display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+        {entry.icon}
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:500,
+          letterSpacing:"-0.01em",color:"#111111"}}>{entry.name}</div>
+        <div style={{display:"flex",alignItems:"center",gap:7,marginTop:4}}>
+          <div style={{width:7,height:7,borderRadius:"50%",background:profile?.color||"#AAAAAA",flexShrink:0}}/>
+          <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#555555",letterSpacing:"0.06em"}}>
+            {profile?.label||"—"}{entry.quantity>1?` · ×${entry.quantity}`:""}
+          </span>
+        </div>
+      </div>
+      <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#AAAAAA",
+        letterSpacing:".08em",opacity:0,transition:"opacity .15s"}}
+        onMouseEnter={e=>(e.currentTarget.style.opacity="1")}
+        onMouseLeave={e=>(e.currentTarget.style.opacity="0")}>
+        tap to edit
+      </span>
+      <button style={{width:72,height:28,display:"flex",alignItems:"center",justifyContent:"center",
+        flexShrink:0,fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:500,
+        letterSpacing:".12em",textTransform:"uppercase",borderRadius:0,cursor:"pointer",
+        border:"1.5px solid #1A8A4A",color:"#1A8A4A",background:"none",whiteSpace:"nowrap",
+        transition:"background .15s,color .15s"}}
+        onClick={e=>{e.stopPropagation();onBought();}}
+        onMouseEnter={e=>{(e.currentTarget as any).style.background="#22C55E";(e.currentTarget as any).style.color="#fff";}}
+        onMouseLeave={e=>{(e.currentTarget as any).style.background="none";(e.currentTarget as any).style.color="#1A8A4A";}}>
+        bought
+      </button>
+    </div>
+  );
+}
+
 function ShoppingTab({ user, profiles }: any) {
   const [items, setItems] = useState<any[]>([]),
     [entries, setEntries] = useState<any[]>([]);
@@ -637,77 +746,19 @@ function ShoppingTab({ user, profiles }: any) {
             {active.length}
           </span>
         </div>
-        {active.length === 0 ? (
-          <div
-            style={{
-              padding: '40px 0',
-              textAlign: 'center',
-              border: '1.5px dashed #E0E0E0',
-              fontFamily: "'DM Mono',monospace",
-              fontSize: 11,
-              color: '#AAAAAA',
-              letterSpacing: '0.06em',
-            }}
-          >
-            list is empty
-          </div>
-        ) : (
-          <div>
-            {active.map((e: any) => {
-              const p = prof(e.added_by);
-              return (
-                <div
-                  key={e.id}
-                  className={`list-row${flashId === e.id ? ' flash' : ''}`}
-                >
-                  <div className="icon-box">{e.icon}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      className="sans"
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 500,
-                        letterSpacing: '-0.01em',
-                      }}
-                    >
-                      {e.name}
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 7,
-                        marginTop: 4,
-                      }}
-                    >
-                      <div
-                        className="u-dot"
-                        style={{ background: p?.color || '#AAAAAA' }}
-                      />
-                      <span
-                        className="mono"
-                        style={{
-                          fontSize: 10,
-                          color: '#555555',
-                          letterSpacing: '0.06em',
-                        }}
-                      >
-                        {p?.label || '—'}
-                        {e.quantity > 1 ? ` · ×${e.quantity}` : ''}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    className="row-btn row-btn--bought"
-                    onClick={() => markBought(e)}
-                  >
-                    bought
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {active.length===0
+  ?<div style={{padding:"40px 0",textAlign:"center",border:"1.5px dashed #E0E0E0",fontFamily:"'DM Mono',monospace",fontSize:11,color:"#AAAAAA",letterSpacing:"0.06em"}}>list is empty</div>
+  :<div>{active.map((e:any)=>{
+    const p=prof(e.added_by);
+    return <ShoppingItemRow key={e.id} entry={e} profile={p} onBought={()=>markBought(e)} onUpdate={async(changes:any)=>{
+      await sb.from("shopping_list_entries").update(changes).eq("id",e.id);
+      setEntries((prev:any[])=>prev.map((x:any)=>x.id===e.id?{...x,...changes}:x));
+    }} onDelete={async()=>{
+      await sb.from("shopping_list_entries").delete().eq("id",e.id);
+      setEntries((prev:any[])=>prev.filter((x:any)=>x.id!==e.id));
+    }}/>;
+  })}</div>}
+
       </div>
       {bought.length > 0 && (
         <div style={{ marginBottom: 52 }}>
@@ -952,125 +1003,98 @@ function VerwaltungTab({ user, profiles }: any) {
     </span>
   );
 
-  const TR = ({ task, v }: any) => {
-    const isDone = v === 'done',
-      isOpen = v === 'open',
-      isGrabbed = v === 'grabbed',
-      isMe = task.grabbed_by === user.id;
-    const gp = prof(task.grabbed_by);
-    return (
-      <div
-        className={`${isDone ? 'arch-row' : 'task-row'}${
-          flashId === task.id ? ' flash' : ''
-        }`}
-      >
-        <div className="status-bar" style={{ background: sbc(task) }} />
-        <div style={{ flex: 1, minWidth: 0, paddingRight: 12 }}>
-          <div
-            className="sans"
-            style={{
-              fontSize: 14,
-              fontWeight: 500,
-              letterSpacing: '-0.01em',
-              lineHeight: 1.45,
-              color: isDone ? '#AAAAAA' : '#111111',
-              textDecoration: isDone ? 'line-through' : 'none',
-            }}
-          >
-            {task.title}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginTop: 7,
-              flexWrap: 'wrap',
-            }}
-          >
-            <UB u={task.urgency} />
-            {(isGrabbed || isDone) && gp && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div className="u-dot" style={{ background: gp.color }} />
-                <span
-                  className="mono"
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: '0.06em',
-                    color: isDone ? '#AAAAAA' : '#555555',
-                  }}
-                >
-                  {isDone ? 'DONE · ' : ''}
-                  {gp.label}
-                </span>
-              </div>
+  const TR=({task,v}:any)=>{
+    const [editing,setEditing]=useState(false);
+    const [title,setTitle]=useState(task.title);
+    const [urg,setUrg]=useState(task.urgency);
+    const tref=useRef<any>(null);
+    useEffect(()=>{if(editing)tref.current?.focus();},[editing]);
+  
+    const saveTask=()=>{
+      if(title.trim()&&(title.trim()!==task.title||urg!==task.urgency)){
+        sb.from("tasks").update({title:title.trim(),urgency:urg}).eq("id",task.id);
+      }
+      setEditing(false);
+    };
+    const cancelTask=()=>{setTitle(task.title);setUrg(task.urgency);setEditing(false);};
+    const deleteTask=()=>sb.from("tasks").delete().eq("id",task.id);
+  
+    const isDone=v==="done",isOpen=v==="open",isGrabbed=v==="grabbed",isMe=task.grabbed_by===user.id;
+    const gp=prof(task.grabbed_by);
+  
+    if(editing) return(
+      <div style={{display:"flex",flexDirection:"column",gap:10,padding:"14px 0 28px 15px",
+        borderBottom:"1px solid #E0E0E0",position:"relative",background:"#FFFDF7",
+        borderLeft:"2.5px solid #D4890A"}}>
+        <textarea ref={tref} value={title} onChange={e=>setTitle(e.target.value)}
+          onKeyDown={(e:any)=>{if(e.key==="Escape")cancelTask();}}
+          onBlur={saveTask}
+          style={{width:"100%",padding:"6px 8px",background:"#FFF4E0",border:"1.5px solid #D4890A",
+            color:"#111111",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,
+            outline:"none",borderRadius:0,resize:"none",lineHeight:1.45,minHeight:56,
+            letterSpacing:"-.01em"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+          <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#AAAAAA",
+            letterSpacing:".1em",marginRight:4}}>URGENCY</span>
+          {(["low","medium","high"] as const).map(u=>(
+            <button key={u} onMouseDown={e=>e.preventDefault()} onClick={()=>setUrg(u)}
+              style={{padding:"3px 8px",fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,
+                letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer",borderRadius:0,
+                background:urg===u?URGENCY[u].bg:"none",
+                border:`1.5px solid ${urg===u?URGENCY[u].color:"#E0E0E0"}`,
+                color:urg===u?URGENCY[u].color:"#AAAAAA"}}>
+              {URGENCY[u].label}
+            </button>
+          ))}
+          <div style={{flex:1}}/>
+          <button onMouseDown={e=>e.preventDefault()} onClick={()=>{setEditing(false);deleteTask();}}
+            style={{height:28,padding:"0 10px",background:"none",border:"1.5px solid #E0E0E0",
+              color:"#AAAAAA",fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:500,
+              letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer",borderRadius:0}}
+            onMouseEnter={e=>{(e.target as any).style.borderColor="#DC2626";(e.target as any).style.color="#DC2626";}}
+            onMouseLeave={e=>{(e.target as any).style.borderColor="#E0E0E0";(e.target as any).style.color="#AAAAAA";}}>
+            delete
+          </button>
+        </div>
+        <span style={{position:"absolute",bottom:6,left:12,fontFamily:"'DM Mono',monospace",
+          fontSize:9,color:"#AAAAAA",letterSpacing:".08em"}}>tap away to save · esc to cancel</span>
+      </div>
+    );
+  
+    return(
+      <div onClick={()=>!isDone&&setEditing(true)}
+        className={`${isDone?"arch-row":"task-row"}${flashId===task.id?" flash":""}`}
+        style={{cursor:isDone?"default":"pointer"}}>
+        <div className="status-bar" style={{background:sbc(task)}}/>
+        <div style={{flex:1,minWidth:0,paddingRight:12}}>
+          <div className="sans" style={{fontSize:14,fontWeight:500,letterSpacing:"-0.01em",lineHeight:1.45,
+            color:isDone?"#AAAAAA":"#111111",textDecoration:isDone?"line-through":"none"}}>{task.title}</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:7,flexWrap:"wrap"}}>
+            <UB u={task.urgency}/>
+            {(isGrabbed||isDone)&&gp&&<div style={{display:"flex",alignItems:"center",gap:5}}>
+              <div className="u-dot" style={{background:gp.color}}/>
+              <span className="mono" style={{fontSize:10,letterSpacing:"0.06em",color:isDone?"#AAAAAA":"#555555"}}>
+                {isDone?"DONE · ":""}{gp.label}
+              </span>
+            </div>}
+            {isGrabbed&&task.grabbed_at&&(
+              <span className="mono" style={{fontSize:10,color:"#AAAAAA",letterSpacing:"0.04em"}}>
+                · {timeAgo(task.grabbed_at)}
+              </span>
             )}
-            <span
-              className="mono"
-              style={{
-                fontSize: 10,
-                color: '#AAAAAA',
-                letterSpacing: '0.04em',
-              }}
-            >
+            <span className="mono" style={{fontSize:10,color:"#AAAAAA",letterSpacing:"0.04em"}}>
               {daysSince(task.created_at)}d ago
             </span>
           </div>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-            flexShrink: 0,
-          }}
-        >
-          {isOpen && (
-            <button
-              className="row-btn row-btn--grab"
-              onClick={() => grab(task.id)}
-            >
-              grab
-            </button>
-          )}
-          {isGrabbed && isMe && (
-            <>
-              <button
-                className="row-btn row-btn--done"
-                onClick={() => done(task.id)}
-              >
-                done
-              </button>
-              <button
-                className="row-btn row-btn--undo"
-                onClick={() => drop(task.id)}
-              >
-                drop
-              </button>
-            </>
-          )}
-          {isGrabbed && !isMe && (
-            <span
-              className="mono"
-              style={{
-                fontSize: 10,
-                color: '#AAAAAA',
-                letterSpacing: '0.06em',
-                paddingTop: 6,
-                textAlign: 'right',
-              }}
-            >
-              grabbed
-            </span>
-          )}
-          {isDone && (
-            <button
-              className="row-btn row-btn--undo"
-              onClick={() => reopen(task.id)}
-            >
-              reopen
-            </button>
-          )}
+        <div style={{display:"flex",flexDirection:"column",gap:6,flexShrink:0}}>
+          {isOpen&&<button className="row-btn row-btn--grab" onClick={e=>{e.stopPropagation();grab(task.id);}}>grab</button>}
+          {isGrabbed&&isMe&&<>
+            <button className="row-btn row-btn--done" onClick={e=>{e.stopPropagation();done(task.id);}}>done</button>
+            <button className="row-btn row-btn--undo" onClick={e=>{e.stopPropagation();drop(task.id);}}>drop</button>
+          </>}
+          {isGrabbed&&!isMe&&<span className="mono" style={{fontSize:10,color:"#AAAAAA",letterSpacing:"0.06em",paddingTop:6,textAlign:"right"}}>grabbed</span>}
+          {isDone&&<button className="row-btn row-btn--undo" onClick={e=>{e.stopPropagation();reopen(task.id);}}>reopen</button>}
         </div>
       </div>
     );
