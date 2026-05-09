@@ -882,122 +882,48 @@ function ShoppingTab({ user, profiles }: any) {
 }
 
 function VerwaltungTab({ user, profiles }: any) {
-  const [tasks, setTasks] = useState<any[]>([]),
-    [input, setInput] = useState('');
-  const [urgency, setUrgency] = useState('medium'),
-    [flashId, setFlashId] = useState<any>(null);
-  const [showArchive, setShowArchive] = useState(true),
-    [busy, setBusy] = useState(true);
-  const ref = useRef<any>(null);
+  const [tasks,setTasks]=useState<any[]>([]), [input,setInput]=useState("");
+  const [urgency,setUrgency]=useState("medium"), [flashId,setFlashId]=useState<any>(null);
+  const [showArchive,setShowArchive]=useState(true), [busy,setBusy]=useState(true);
+  const ref=useRef<any>(null);
 
-  useEffect(() => {
-    sb.from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .then(({ data }: any) => {
-        setTasks(data || []);
-        setBusy(false);
-      });
-  }, []);
+  useEffect(()=>{
+    sb.from("tasks").select("*").order("created_at",{ascending:false}).then(({data}:any)=>{setTasks(data||[]);setBusy(false);});
+  },[]);
 
-  useEffect(() => {
-    const ch = sb
-      .channel('tasks_rt')
-      .on(
-        'postgres_changes' as any,
-        { event: '*', schema: 'public', table: 'tasks' },
-        (p: any) => {
-          if (p.eventType === 'INSERT')
-            setTasks((prev: any[]) =>
-              prev.some((t: any) => t.id === p.new.id) ? prev : [p.new, ...prev]
-            );
-          if (p.eventType === 'UPDATE')
-            setTasks((prev: any[]) =>
-              prev.map((t: any) => (t.id === p.new.id ? p.new : t))
-            );
-          if (p.eventType === 'DELETE')
-            setTasks((prev: any[]) =>
-              prev.filter((t: any) => t.id !== p.old.id)
-            );
-        }
-      )
-      .subscribe();
-    return () => {
-      sb.removeChannel(ch);
-    };
-  }, []);
+  useEffect(()=>{
+    const ch=sb.channel("tasks_rt")
+      .on("postgres_changes" as any,{event:"*",schema:"public",table:"tasks"},(p:any)=>{
+        if(p.eventType==="INSERT") setTasks((prev:any[])=>prev.some((t:any)=>t.id===p.new.id)?prev:[p.new,...prev]);
+        if(p.eventType==="UPDATE") setTasks((prev:any[])=>prev.map((t:any)=>t.id===p.new.id?p.new:t));
+        if(p.eventType==="DELETE") setTasks((prev:any[])=>prev.filter((t:any)=>t.id!==p.old.id));
+      }).subscribe();
+    return ()=>{ sb.removeChannel(ch); };
+  },[]);
 
-  const addTask = async () => {
-    if (!input.trim()) return;
-    const { data } = await sb
-      .from('tasks')
-      .insert({ title: input.trim(), urgency, created_by: user.id })
-      .select()
-      .single();
-    if (data) {
-      setFlashId(data.id);
-      setTimeout(() => setFlashId(null), 500);
-    }
-    setInput('');
-    ref.current?.focus();
+  const addTask=async()=>{
+    if(!input.trim()) return;
+    const {data}=await sb.from("tasks").insert({title:input.trim(),urgency,created_by:user.id}).select().single();
+    if(data){setFlashId(data.id);setTimeout(()=>setFlashId(null),500);}
+    setInput("");ref.current?.focus();
   };
 
-  const grab = (id: any) =>
-    sb
-      .from('tasks')
-      .update({
-        status: 'grabbed',
-        grabbed_by: user.id,
-        grabbed_at: new Date().toISOString(),
-      })
-      .eq('id', id);
-  const drop = (id: any) =>
-    sb
-      .from('tasks')
-      .update({ status: 'open', grabbed_by: null, grabbed_at: null })
-      .eq('id', id);
-  const done = (id: any) =>
-    sb
-      .from('tasks')
-      .update({ status: 'done', completed_at: new Date().toISOString() })
-      .eq('id', id);
-  const reopen = (id: any) =>
-    sb
-      .from('tasks')
-      .update({
-        status: 'open',
-        grabbed_by: null,
-        grabbed_at: null,
-        completed_at: null,
-      })
-      .eq('id', id);
-  const clearDone = () => {
-    const ids = tasks
-      .filter((t: any) => t.status === 'done')
-      .map((t: any) => t.id);
-    if (ids.length) sb.from('tasks').delete().in('id', ids);
+  const grab=(id:any)=>sb.from("tasks").update({status:"grabbed",grabbed_by:user.id,grabbed_at:new Date().toISOString()}).eq("id",id);
+  const drop=(id:any)=>sb.from("tasks").update({status:"open",grabbed_by:null,grabbed_at:null}).eq("id",id);
+  const done=(id:any)=>sb.from("tasks").update({status:"done",completed_at:new Date().toISOString()}).eq("id",id);
+  const reopen=(id:any)=>sb.from("tasks").update({status:"open",grabbed_by:null,grabbed_at:null,completed_at:null}).eq("id",id);
+  const clearDone=()=>{const ids=tasks.filter((t:any)=>t.status==="done").map((t:any)=>t.id);if(ids.length)sb.from("tasks").delete().in("id",ids);};
+
+  const sbc=(task:any)=>{
+    if(task.status==="done") return "#22C55E";
+    if(task.status==="grabbed") return task.urgency==="high"?"#DC2626":"#D4890A";
+    if(task.urgency==="high") return "#DC2626";
+    if(task.urgency==="medium") return "#D4890A";
+    return "#E0E0E0";
   };
-  const sbc = (task: any) => {
-    if (task.status === 'done') return '#22C55E';
-    if (task.status === 'grabbed')
-      return task.urgency === 'high' ? '#DC2626' : '#D4890A';
-    if (task.urgency === 'high') return '#DC2626';
-    if (task.urgency === 'medium') return '#D4890A';
-    return '#E0E0E0';
-  };
-  const prof = (uid: any) => profiles.find((p: any) => p.id === uid);
-  const UB = ({ u }: any) => (
-    <span
-      className="urgency-badge"
-      style={{
-        color: URGENCY[u].color,
-        background: URGENCY[u].bg,
-        border: `1px solid ${u === 'low' ? '#E0E0E0' : URGENCY[u].color}33`,
-      }}
-    >
-      {URGENCY[u].label}
-    </span>
-  );
+
+  const prof=(uid:any)=>profiles.find((p:any)=>p.id===uid);
+  const UB=({u}:any)=><span className="urgency-badge" style={{color:URGENCY[u].color,background:URGENCY[u].bg,border:`1px solid ${u==="low"?"#E0E0E0":URGENCY[u].color}33`}}>{URGENCY[u].label}</span>;
 
   const TR=({task,v}:any)=>{
     const [editing,setEditing]=useState(false);
@@ -1005,7 +931,7 @@ function VerwaltungTab({ user, profiles }: any) {
     const [urg,setUrg]=useState(task.urgency);
     const tref=useRef<any>(null);
     useEffect(()=>{if(editing)tref.current?.focus();},[editing]);
-  
+
     const saveTask=()=>{
       if(title.trim()&&(title.trim()!==task.title||urg!==task.urgency)){
         sb.from("tasks").update({title:title.trim(),urgency:urg}).eq("id",task.id);
@@ -1014,15 +940,15 @@ function VerwaltungTab({ user, profiles }: any) {
     };
     const cancelTask=()=>{setTitle(task.title);setUrg(task.urgency);setEditing(false);};
     const deleteTask=()=>sb.from("tasks").delete().eq("id",task.id);
-  
+
     const isDone=v==="done",isOpen=v==="open",isGrabbed=v==="grabbed",isMe=task.grabbed_by===user.id;
     const gp=prof(task.grabbed_by);
-  
+
     if(editing) return(
       <div style={{display:"flex",flexDirection:"column",gap:10,padding:"14px 0 28px 15px",
         borderBottom:"1px solid #E0E0E0",position:"relative",background:"#FFFDF7",
         borderLeft:"2.5px solid #D4890A"}}>
-        <textarea ref={tref} value={title} onChange={e=>setTitle(e.target.value)}
+        <textarea ref={tref} value={title} onChange={(e:any)=>setTitle(e.target.value)}
           onKeyDown={(e:any)=>{if(e.key==="Escape")cancelTask();}}
           onBlur={saveTask}
           style={{width:"100%",padding:"6px 8px",background:"#FFF4E0",border:"1.5px solid #D4890A",
@@ -1033,7 +959,7 @@ function VerwaltungTab({ user, profiles }: any) {
           <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#AAAAAA",
             letterSpacing:".1em",marginRight:4}}>URGENCY</span>
           {(["low","medium","high"] as const).map(u=>(
-            <button key={u} onMouseDown={e=>e.preventDefault()} onClick={()=>setUrg(u)}
+            <button key={u} onMouseDown={(e:any)=>e.preventDefault()} onClick={()=>setUrg(u)}
               style={{padding:"3px 8px",fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,
                 letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer",borderRadius:0,
                 background:urg===u?URGENCY[u].bg:"none",
@@ -1043,12 +969,12 @@ function VerwaltungTab({ user, profiles }: any) {
             </button>
           ))}
           <div style={{flex:1}}/>
-          <button onMouseDown={e=>e.preventDefault()} onClick={()=>{setEditing(false);deleteTask();}}
+          <button onMouseDown={(e:any)=>e.preventDefault()} onClick={()=>{setEditing(false);deleteTask();}}
             style={{height:28,padding:"0 10px",background:"none",border:"1.5px solid #E0E0E0",
               color:"#AAAAAA",fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:500,
               letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer",borderRadius:0}}
-            onMouseEnter={e=>{(e.target as any).style.borderColor="#DC2626";(e.target as any).style.color="#DC2626";}}
-            onMouseLeave={e=>{(e.target as any).style.borderColor="#E0E0E0";(e.target as any).style.color="#AAAAAA";}}>
+            onMouseEnter={(e:any)=>{e.target.style.borderColor="#DC2626";e.target.style.color="#DC2626";}}
+            onMouseLeave={(e:any)=>{e.target.style.borderColor="#E0E0E0";e.target.style.color="#AAAAAA";}}>
             delete
           </button>
         </div>
@@ -1056,7 +982,7 @@ function VerwaltungTab({ user, profiles }: any) {
           fontSize:9,color:"#AAAAAA",letterSpacing:".08em"}}>tap away to save · esc to cancel</span>
       </div>
     );
-  
+
     return(
       <div onClick={()=>!isDone&&setEditing(true)}
         className={`${isDone?"arch-row":"task-row"}${flashId===task.id?" flash":""}`}
@@ -1067,12 +993,14 @@ function VerwaltungTab({ user, profiles }: any) {
             color:isDone?"#AAAAAA":"#111111",textDecoration:isDone?"line-through":"none"}}>{task.title}</div>
           <div style={{display:"flex",alignItems:"center",gap:8,marginTop:7,flexWrap:"wrap"}}>
             <UB u={task.urgency}/>
-            {(isGrabbed||isDone)&&gp&&<div style={{display:"flex",alignItems:"center",gap:5}}>
-              <div className="u-dot" style={{background:gp.color}}/>
-              <span className="mono" style={{fontSize:10,letterSpacing:"0.06em",color:isDone?"#AAAAAA":"#555555"}}>
-                {isDone?"DONE · ":""}{gp.label}
-              </span>
-            </div>}
+            {(isGrabbed||isDone)&&gp&&(
+              <div style={{display:"flex",alignItems:"center",gap:5}}>
+                <div className="u-dot" style={{background:gp.color}}/>
+                <span className="mono" style={{fontSize:10,letterSpacing:"0.06em",color:isDone?"#AAAAAA":"#555555"}}>
+                  {isDone?"DONE · ":""}{gp.label}
+                </span>
+              </div>
+            )}
             {isGrabbed&&task.grabbed_at&&(
               <span className="mono" style={{fontSize:10,color:"#AAAAAA",letterSpacing:"0.04em"}}>
                 · {timeAgo(task.grabbed_at)}
@@ -1084,186 +1012,96 @@ function VerwaltungTab({ user, profiles }: any) {
           </div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:6,flexShrink:0}}>
-          {isOpen&&<button className="row-btn row-btn--grab" onClick={e=>{e.stopPropagation();grab(task.id);}}>grab</button>}
-          {isGrabbed&&isMe&&<>
-            <button className="row-btn row-btn--done" onClick={e=>{e.stopPropagation();done(task.id);}}>done</button>
-            <button className="row-btn row-btn--undo" onClick={e=>{e.stopPropagation();drop(task.id);}}>drop</button>
-          </>}
-          {isGrabbed&&!isMe&&<span className="mono" style={{fontSize:10,color:"#AAAAAA",letterSpacing:"0.06em",paddingTop:6,textAlign:"right"}}>grabbed</span>}
-          {isDone&&<button className="row-btn row-btn--undo" onClick={e=>{e.stopPropagation();reopen(task.id);}}>reopen</button>}
+          {isOpen&&(
+            <button className="row-btn row-btn--grab"
+              onClick={(e:any)=>{e.stopPropagation();grab(task.id);}}>
+              grab
+            </button>
+          )}
+          {isGrabbed&&isMe&&(
+            <>
+              <button className="row-btn row-btn--done"
+                onClick={(e:any)=>{e.stopPropagation();done(task.id);}}>done</button>
+              <button className="row-btn row-btn--undo"
+                onClick={(e:any)=>{e.stopPropagation();drop(task.id);}}>drop</button>
+            </>
+          )}
+          {isGrabbed&&!isMe&&(
+            <span className="mono" style={{fontSize:10,color:"#AAAAAA",letterSpacing:"0.06em",
+              paddingTop:6,textAlign:"right"}}>grabbed</span>
+          )}
+          {isDone&&(
+            <button className="row-btn row-btn--undo"
+              onClick={(e:any)=>{e.stopPropagation();reopen(task.id);}}>reopen</button>
+          )}
         </div>
       </div>
     );
   };
 
-  const open = tasks.filter((t: any) => t.status === 'open');
-  const grabbed = tasks.filter((t: any) => t.status === 'grabbed');
-  const doneT = tasks.filter((t: any) => t.status === 'done');
+  const open=tasks.filter((t:any)=>t.status==="open");
+  const grabbed=tasks.filter((t:any)=>t.status==="grabbed");
+  const doneT=tasks.filter((t:any)=>t.status==="done");
 
-  if (busy)
-    return (
-      <div
-        style={{
-          padding: '60px 0',
-          textAlign: 'center',
-          fontFamily: "'DM Mono',monospace",
-          fontSize: 11,
-          color: '#AAAAAA',
-          letterSpacing: '0.08em',
-        }}
-      >
-        loading tasks...
-      </div>
-    );
+  if(busy) return <div style={{padding:"60px 0",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:11,color:"#AAAAAA",letterSpacing:"0.08em"}}>loading tasks...</div>;
 
-  return (
+  return(
     <div>
-      <div style={{ marginBottom: 48 }}>
-        <input
-          ref={ref}
-          className="haus-input"
-          placeholder="describe a task..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e: any) => e.key === 'Enter' && addTask()}
-        />
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingTop: 10,
-            gap: 12,
-          }}
-        >
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[
-              ['low', 'sl'],
-              ['medium', 'sm'],
-              ['high', 'sh'],
-            ].map(([u, cls]) => (
-              <button
-                key={u}
-                className={`urgency-opt${urgency === u ? ' ' + cls : ''}`}
-                onClick={() => setUrgency(u)}
-              >
+      <div style={{marginBottom:48}}>
+        <input ref={ref} className="haus-input" placeholder="describe a task..."
+          value={input} onChange={(e:any)=>setInput(e.target.value)}
+          onKeyDown={(e:any)=>e.key==="Enter"&&addTask()}/>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:10,gap:12}}>
+          <div style={{display:"flex",gap:6}}>
+            {[["low","sl"],["medium","sm"],["high","sh"]].map(([u,cls])=>(
+              <button key={u} className={`urgency-opt${urgency===u?" "+cls:""}`} onClick={()=>setUrgency(u)}>
                 {URGENCY[u].label}
               </button>
             ))}
           </div>
-          <button
-            className="add-btn"
-            disabled={!input.trim()}
-            onClick={addTask}
-          >
-            add task
-          </button>
+          <button className="add-btn" disabled={!input.trim()} onClick={addTask}>add task</button>
         </div>
       </div>
-      {open.length > 0 && (
-        <div style={{ marginBottom: 44 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 16,
-            }}
-          >
+
+      {open.length>0&&(
+        <div style={{marginBottom:44}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
             <span className="label">open</span>
-            <span
-              className="label"
-              style={{ color: '#111111', fontWeight: 500 }}
-            >
-              {open.length}
-            </span>
+            <span className="label" style={{color:"#111111",fontWeight:500}}>{open.length}</span>
           </div>
-          <div>
-            {open.map((task: any) => (
-              <TR key={task.id} task={task} v="open" />
-            ))}
-          </div>
+          <div>{open.map((task:any)=><TR key={task.id} task={task} v="open"/>)}</div>
         </div>
       )}
-      {grabbed.length > 0 && (
-        <div style={{ marginBottom: 44 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 16,
-            }}
-          >
-            <span className="label" style={{ color: '#D4890A' }}>
-              in progress · {grabbed.length}
-            </span>
+
+      {grabbed.length>0&&(
+        <div style={{marginBottom:44}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+            <span className="label" style={{color:"#D4890A"}}>in progress · {grabbed.length}</span>
           </div>
-          <div>
-            {grabbed.map((task: any) => (
-              <TR key={task.id} task={task} v="grabbed" />
-            ))}
-          </div>
+          <div>{grabbed.map((task:any)=><TR key={task.id} task={task} v="grabbed"/>)}</div>
         </div>
       )}
-      {open.length === 0 && grabbed.length === 0 && (
-        <div
-          style={{
-            padding: '40px 0',
-            textAlign: 'center',
-            border: '1.5px dashed #E0E0E0',
-            fontFamily: "'DM Mono',monospace",
-            fontSize: 11,
-            color: '#AAAAAA',
-            letterSpacing: '0.06em',
-            marginBottom: 44,
-          }}
-        >
-          no open tasks
-        </div>
+
+      {open.length===0&&grabbed.length===0&&(
+        <div style={{padding:"40px 0",textAlign:"center",border:"1.5px dashed #E0E0E0",
+          fontFamily:"'DM Mono',monospace",fontSize:11,color:"#AAAAAA",letterSpacing:"0.06em",
+          marginBottom:44}}>no open tasks</div>
       )}
-      {doneT.length > 0 && (
+
+      {doneT.length>0&&(
         <div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 16,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span className="label" style={{ color: '#1A8A4A' }}>
-                done · {doneT.length}
-              </span>
-              <button
-                onClick={() => setShowArchive((p: boolean) => !p)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: "'DM Mono',monospace",
-                  fontSize: 10,
-                  color: '#AAAAAA',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  padding: 0,
-                }}
-              >
-                {showArchive ? 'hide' : 'show'}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <span className="label" style={{color:"#1A8A4A"}}>done · {doneT.length}</span>
+              <button onClick={()=>setShowArchive((p:boolean)=>!p)}
+                style={{background:"none",border:"none",cursor:"pointer",fontFamily:"'DM Mono',monospace",
+                  fontSize:10,color:"#AAAAAA",letterSpacing:"0.1em",textTransform:"uppercase",padding:0}}>
+                {showArchive?"hide":"show"}
               </button>
             </div>
-            <button className="clear-btn" onClick={clearDone}>
-              clear all
-            </button>
+            <button className="clear-btn" onClick={clearDone}>clear all</button>
           </div>
-          {showArchive && (
-            <div>
-              {doneT.map((task: any) => (
-                <TR key={task.id} task={task} v="done" />
-              ))}
-            </div>
-          )}
+          {showArchive&&<div>{doneT.map((task:any)=><TR key={task.id} task={task} v="done"/>)}</div>}
         </div>
       )}
     </div>
