@@ -454,7 +454,6 @@ function ShoppingTab({ user, profiles }: any) {
   const [input, setInput] = useState(''),
     [qty, setQty] = useState(1);
   const [sugs, setSugs] = useState<any[]>([]),
-    [flashId, setFlashId] = useState<any>(null);
   const [busy, setBusy] = useState(true);
   const ref = useRef<any>(null);
 
@@ -589,10 +588,7 @@ function ShoppingTab({ user, profiles }: any) {
       quantity_at_event: qty,
       performed_by: user.id,
     });
-    if (entry) {
-      setFlashId(entry.id);
-      setTimeout(() => setFlashId(null), 500);
-    }
+
     setInput('');
     setQty(1);
     setSugs([]);
