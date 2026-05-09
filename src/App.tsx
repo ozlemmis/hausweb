@@ -951,7 +951,11 @@ function VerwaltungTab({ user, profiles }: any) {
       setEditing(false);
     };
     const cancelTask=()=>{setTitle(task.title);setUrg(task.urgency);setEditing(false);};
-    const deleteTask=()=>sb.from("tasks").delete().eq("id",task.id);
+    const deleteTask=async()=>{
+      const {error}=await sb.from("tasks").delete().eq("id",task.id);
+      if(error) console.error("delete error:",error.message);
+      else setTasks((prev:any[])=>prev.filter((t:any)=>t.id!==task.id));
+    };
 
     const isDone=v==="done",isOpen=v==="open",isGrabbed=v==="grabbed",isMe=task.grabbed_by===user.id;
     const gp=prof(task.grabbed_by);
