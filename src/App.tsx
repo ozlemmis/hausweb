@@ -1273,7 +1273,6 @@ function ScanTab({ user, onGoToShopping }: any) {
                                                                                                                                 setState('not_found');
                                                                                                                                     }
                                                                                                                                       };
-  }
 
   const handleClose = async () => {
     await stopScanner();
