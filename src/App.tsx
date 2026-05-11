@@ -1369,7 +1369,7 @@ function ScanTab({ user, onGoToShopping }: any) {
         letterSpacing:'.12em',textTransform:'uppercase',marginBottom:12}}>product not found</div>
       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:'#555555',
         lineHeight:1.6,marginBottom:36,maxWidth:280}}>
-        This barcode isn't in the Open Food Facts database yet.
+        This barcode isn't in the Open Food/Beauty/Product Facts databases yet.
       </div>
       <button onClick={handleClose}
         style={{width:'100%',maxWidth:280,height:52,background:'#111111',color:'#fff',
