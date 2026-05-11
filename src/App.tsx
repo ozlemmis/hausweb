@@ -1252,19 +1252,28 @@ function ScanTab({ user, onGoToShopping }: any) {
   };
 
   const fetchProduct = async (code:string) => {
-    try {
-      const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}?fields=product_name,brands,categories,image_url,nutriscore_grade,nova_group,nutriments,allergens,ingredients_text,labels`);
-      const data = await res.json();
-      if (data.status===1 && data.product) {
-        setProduct(data.product);
-        setState('result');
-      } else {
-        setState('not_found');
-      }
-    } catch(e) {
-      setState('not_found');
-    }
-  };
+        const FIELDS = 'product_name,brands,categories,image_url,nutriscore_grade,nova_group,nutriments,allergens,ingredients_text,labels';
+            const APIS = [
+                  { url:`https://world.openfoodfacts.org/api/v2/product/${code}?fields=${FIELDS}`,    source:'Open Food Facts'     },
+                        { url:`https://world.openbeautyfacts.org/api/v2/product/${code}?fields=${FIELDS}`,  source:'Open Beauty Facts'   },
+                              { url:`https://world.openproductsfacts.org/api/v2/product/${code}?fields=${FIELDS}`,source:'Open Products Facts'  },
+                                  ];
+                                      try {
+                                            for (const api of APIS) {
+                                                    const res  = await fetch(api.url);
+                                                            const data = await res.json();
+                                                                    if (data.status===1 && data.product && data.product.product_name) {
+                                                                              setProduct({ ...data.product, _source: api.source });
+                                                                                        setState('result');
+                                                                                                  return;
+                                                                                                          }
+                                                                                                                }
+                                                                                                                      setState('not_found');
+                                                                                                                          } catch(e) {
+                                                                                                                                setState('not_found');
+                                                                                                                                    }
+                                                                                                                                      };
+  }
 
   const handleClose = async () => {
     await stopScanner();
