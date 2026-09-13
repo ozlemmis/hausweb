@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   GANG_INTRO,
   CATS,
@@ -6,6 +6,7 @@ import {
   FEEDING,
   LITTER,
   PLAY,
+  WHERE_IT_LIVES,
   HOUSE,
   CONTACTS,
 } from './catsContent';
@@ -55,21 +56,26 @@ export const CATS_CSS = `
 .cat-stepnum{width:26px;height:26px;flex-shrink:0;border:1.5px solid #E0E0E0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;color:#AAAAAA}
 .cat-stept{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:-.01em;color:#111111;line-height:1.35}
 .cat-stepd{font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;color:#555555;margin-top:4px}
-.cat-where{display:flex;gap:12px;padding:12px;border:1.5px solid #E0E0E0;margin-bottom:10px;background:#fff}
+.cat-where{display:flex;gap:14px;padding:12px;border:1.5px solid #E0E0E0;margin-bottom:10px;background:#fff}
 .cat-wherelabel{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:-.01em;color:#111111}
 .cat-whereplace{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#D4890A;margin-top:4px;line-height:1.5}
 .cat-wheretext{font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.55;color:#555555;margin-top:6px}
-.cat-photo{background:#F5F5F5;border:1.5px dashed #E0E0E0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;overflow:hidden}
+.cat-photo{background:#F5F5F5;border:1.5px dashed #E0E0E0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;overflow:hidden;padding:0}
 .cat-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cat-photo.tappable{cursor:zoom-in;border-style:solid;border-color:#111111}
 .cat-photocap{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:#AAAAAA;text-align:center;padding:0 4px;line-height:1.4}
-.cat-toggle{display:flex;border:1.5px solid #111111;margin-bottom:20px}
-.cat-toggle button{flex:1;height:40px;background:none;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#AAAAAA;transition:background .12s,color .12s}
-.cat-toggle button+button{border-left:1.5px solid #111111}
-.cat-toggle button.on{background:#111111;color:#fff}
+.cat-lightbox{position:fixed;inset:0;background:rgba(17,17,17,.94);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;cursor:zoom-out}
+.cat-lightbox img{max-width:100%;max-height:80vh;object-fit:contain}
+.cat-lightbox span{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}
 .cat-hero{display:flex;gap:10px;margin-bottom:22px}
-.cat-heroitem{flex:1;min-width:0;text-align:center}
-.cat-heroname{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:-.01em;color:#111111;margin-top:8px}
-.cat-herobar{height:3px;margin-top:6px}
+.cat-heropick{flex:1;min-width:0;background:none;border:none;padding:0;cursor:pointer;text-align:center;opacity:.4;transition:opacity .15s}
+.cat-heropick.on{opacity:1}
+.cat-heropick .cat-photo{width:100%;height:92px}
+.cat-heropick.on .cat-photo{border-style:solid;border-color:#111111}
+.cat-heroname{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:-.01em;color:#AAAAAA;margin-top:8px}
+.cat-heropick.on .cat-heroname{color:#111111}
+.cat-herobar{height:3px;margin-top:6px;background:#E0E0E0}
+.cat-heropick.on .cat-herobar{height:6px}
 .cat-quote{border-left:2.5px solid #D4890A;background:#FFFDF7;padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.65;color:#555555;margin-top:18px}
 .cat-contact{border:1.5px solid #111111;padding:14px;margin-bottom:10px}
 .cat-tagline{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#AAAAAA}
@@ -106,7 +112,7 @@ const Paw = ({ size = 9, color = C.amber }: any) => (
 /* Cat head logo — same construction language as HausLogo */
 export function CatLogo({ size = 64 }: any) {
   const s = size, cx = s / 2, cy = s * 0.56, r = s * 0.34;
-  const dots = CATS.map((c) => c.color);
+  const dots = CATS.map((c: any) => c.color);
   const dr = s * 0.088, ov = dr * 0.35, st = dr * 2 - ov;
   const tw = dots.length * dr * 2 - (dots.length - 1) * ov;
   const sx = cx - tw / 2 + dr, dy = cy + r * 0.42;
@@ -121,7 +127,7 @@ export function CatLogo({ size = 64 }: any) {
       <circle cx={cx} cy={cy} r={r} stroke={C.text} strokeWidth="1.5" fill="none" />
       <clipPath id="catclip"><circle cx={cx} cy={cy} r={r} /></clipPath>
       <g clipPath="url(#catclip)">
-        {dots.map((col, i) => (
+        {dots.map((col: any, i: number) => (
           <circle key={i} cx={sx + i * st} cy={dy} r={dr} fill={col} opacity={0.9} />
         ))}
       </g>
@@ -144,9 +150,17 @@ function SectionHead({ num, title }: any) {
   );
 }
 
-function PhotoSlot({ src, caption, w = 96, h = 96 }: any) {
+/* A photo slot. When a real photo is set it becomes tappable and
+   opens full-screen via onZoom. Placeholders are not tappable. */
+function PhotoSlot({ src, caption, w = 96, h = 96, onZoom }: any) {
+  const tappable = Boolean(src && onZoom);
   return (
-    <div className="cat-photo" style={{ width: w, height: h }}>
+    <div
+      className={`cat-photo${tappable ? ' tappable' : ''}`}
+      style={{ width: w, height: h }}
+      onClick={tappable ? () => onZoom(src) : undefined}
+      title={tappable ? 'Tap to enlarge' : undefined}
+    >
       {src ? (
         <img src={src} alt={caption} />
       ) : (
@@ -155,6 +169,21 @@ function PhotoSlot({ src, caption, w = 96, h = 96 }: any) {
           <span className="cat-photocap">{caption}</span>
         </>
       )}
+    </div>
+  );
+}
+
+function Lightbox({ src, onClose }: any) {
+  useEffect(() => {
+    const esc = (e: any) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [onClose]);
+  if (!src) return null;
+  return (
+    <div className="cat-lightbox" onClick={onClose}>
+      <img src={src} alt="" />
+      <span>tap anywhere to close</span>
     </div>
   );
 }
@@ -197,32 +226,10 @@ function Steps({ items }: any) {
   );
 }
 
-function WhereItLives({ items, caption = 'photo' }: any) {
-  if (!items?.length) return null;
-  return (
-    <div style={{ marginTop: 26 }}>
-      <div className="label" style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
-        <Paw size={9} color={C.muted} /> where it lives
-      </div>
-      {items.map((w: any, i: number) => (
-        <div className="cat-where" key={i}>
-          <PhotoSlot src={w.photo} caption={`${caption} · ${w.label.toLowerCase()}`} w={68} h={68} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="cat-wherelabel">{w.label}</div>
-            <div className="cat-whereplace">{w.place}</div>
-            <div className="cat-wheretext">{w.text}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function CatCard({ cat }: any) {
   return (
     <div className="cat-card" style={{ borderLeft: `4px solid ${cat.color}` }}>
       <div className="cat-cardtop">
-        <PhotoSlot src={cat.photo} caption={`photo · ${cat.name.toLowerCase()}`} w={88} h={88} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="cat-name">{cat.name}</div>
           <div className="cat-nick">{cat.nicknames}</div>
@@ -256,40 +263,46 @@ function CatCard({ cat }: any) {
 /* ── the page ──────────────────────────────────────────────────── */
 
 export default function CatsTab() {
-  const [when, setWhen] = useState<'morning' | 'evening'>('morning');
-  const catById = (id: string) => CATS.find((c) => c.id === id);
+  const [picked, setPicked] = useState(CATS[0].id);
+  const [zoom, setZoom] = useState<string | null>(null);
+
+  const catById = (id: string) => CATS.find((c: any) => c.id === id);
+  const current = catById(picked) || CATS[0];
 
   return (
     <div>
+      <Lightbox src={zoom} onClose={() => setZoom(null)} />
+
       {/* 01 — THE GANG */}
       <section className="cat-sec">
         <SectionHead num="01" title="the gang" />
         <div className="cat-hero">
-          {CATS.map((c) => (
-            <div className="cat-heroitem" key={c.id}>
-              <PhotoSlot src={c.photo} caption={c.name.toLowerCase()} w="100%" h={92} />
-              <div className="cat-heroname">{c.name}</div>
-              <div className="cat-herobar" style={{ background: c.color }} />
-            </div>
-          ))}
+          {CATS.map((c: any) => {
+            const on = c.id === picked;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                className={`cat-heropick${on ? ' on' : ''}`}
+                onClick={() => setPicked(c.id)}
+                aria-pressed={on}
+              >
+                <PhotoSlot src={c.photo} caption={c.name.toLowerCase()} w="100%" h={92} />
+                <div className="cat-heroname">{c.name}</div>
+                <div className="cat-herobar" style={on ? { background: c.color } : undefined} />
+              </button>
+            );
+          })}
         </div>
         <div className="cat-secsub">{GANG_INTRO}</div>
-        {CATS.map((c) => <CatCard key={c.id} cat={c} />)}
+        <CatCard cat={current} />
       </section>
 
       {/* 02 — A VISIT IN 5 STEPS */}
       <section className="cat-sec">
         <SectionHead num="02" title="a visit in 5 steps" />
         <div className="cat-secsub">{ROUTINE.note}</div>
-        <div className="cat-toggle">
-          <button className={when === 'morning' ? 'on' : ''} onClick={() => setWhen('morning')}>
-            morning · ~8:00
-          </button>
-          <button className={when === 'evening' ? 'on' : ''} onClick={() => setWhen('evening')}>
-            evening · ~18:00
-          </button>
-        </div>
-        <Steps items={when === 'morning' ? ROUTINE.morning : ROUTINE.evening} />
+        <Steps items={ROUTINE.steps} />
         <div className="cat-quote">{ROUTINE.photosNote}</div>
       </section>
 
@@ -297,7 +310,6 @@ export default function CatsTab() {
       <section className="cat-sec">
         <SectionHead num="03" title="feeding" />
         {FEEDING.rules.map((r: any, i: number) => <Note key={i} {...r} />)}
-        <WhereItLives items={FEEDING.whereItLives} caption="food" />
       </section>
 
       {/* 04 — LITTER */}
@@ -305,7 +317,6 @@ export default function CatsTab() {
         <SectionHead num="04" title="litter" />
         <Steps items={LITTER.steps} />
         {LITTER.rules.map((r: any, i: number) => <Note key={i} {...r} />)}
-        <WhereItLives items={LITTER.whereItLives} caption="litter" />
       </section>
 
       {/* 05 — PLAY & CUDDLES */}
@@ -327,46 +338,39 @@ export default function CatsTab() {
             </div>
           );
         })}
-        <WhereItLives items={PLAY.whereItLives} caption="toys" />
       </section>
 
-      {/* 06 — HOUSE QUIRKS */}
+      {/* 06 — WHERE EVERYTHING LIVES */}
       <section className="cat-sec">
-        <SectionHead num="06" title="house quirks & safety" />
+        <SectionHead num="06" title="where everything lives" />
+        {WHERE_IT_LIVES.map((w: any, i: number) => (
+          <div className="cat-where" key={i}>
+            <PhotoSlot
+              src={w.photo}
+              caption={w.label.toLowerCase()}
+              w={92}
+              h={92}
+              onZoom={setZoom}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="cat-wherelabel">{w.label}</div>
+              <div className="cat-whereplace">{w.place}</div>
+              <div className="cat-wheretext">{w.text}</div>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* 07 — HOUSE QUIRKS */}
+      <section className="cat-sec">
+        <SectionHead num="07" title="house quirks & safety" />
         <div className="cat-secsub">{HOUSE.intro}</div>
         {HOUSE.warnings.map((w: any, i: number) => <Note key={i} {...w} />)}
-
-        <div className="cat-where" style={{ marginTop: 24 }}>
-          <PhotoSlot src={HOUSE.plants.photo} caption="photo · plants" w={68} h={68} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="cat-wherelabel">{HOUSE.plants.title}</div>
-            <div className="cat-wheretext">{HOUSE.plants.text}</div>
-          </div>
-        </div>
-        <div className="cat-where">
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="cat-wherelabel">{HOUSE.packages.title}</div>
-            <div className="cat-wheretext">{HOUSE.packages.text}</div>
-          </div>
-        </div>
-
-        <div style={{ border: `1.5px solid ${C.amber}`, background: '#FFFDF7', padding: 16, marginTop: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <Paw size={11} color={C.amber} />
-            <span style={{
-              fontFamily: "'DM Sans',sans-serif", fontSize: 15, fontWeight: 600,
-              letterSpacing: '-.01em', color: C.amberText,
-            }}>{HOUSE.comfort.title}</span>
-          </div>
-          {HOUSE.comfort.lines.map((l: string, i: number) => (
-            <div key={i} className="cat-colitem" style={{ color: '#6B4400', fontSize: 13.5 }}>{l}</div>
-          ))}
-        </div>
       </section>
 
-      {/* 07 — EMERGENCY & CONTACTS */}
+      {/* 08 — EMERGENCY & CONTACTS */}
       <section className="cat-sec">
-        <SectionHead num="07" title="emergency & contacts" />
+        <SectionHead num="08" title="emergency & contacts" />
 
         {CONTACTS.people.map((p: any, i: number) => (
           <div className="cat-contact" key={i}>
@@ -389,14 +393,9 @@ export default function CatsTab() {
 
         <Note level="alert" title={CONTACTS.vet.title} text={CONTACTS.vet.emergency} />
         <Note level="info" title="Routine vet — Felmo" text={CONTACTS.vet.regular} />
-        <Note level="info" title="Nearest emergency clinic" text={CONTACTS.vet.clinic} />
-        <Note level="info" title={CONTACTS.neighbour.title} text={CONTACTS.neighbour.text} />
-        <Note level="info" title="Address" text={CONTACTS.address} />
-
-        <div className="cat-quote" style={{ marginTop: 24 }}>{CONTACTS.closing}</div>
 
         <div className="cat-paws" style={{ marginTop: 32 }}>
-          {CATS.map((c) => <Paw key={c.id} size={12} color={c.color} />)}
+          {CATS.map((c: any) => <Paw key={c.id} size={12} color={c.color} />)}
         </div>
       </section>
     </div>
@@ -480,7 +479,7 @@ export function GuestLoginPage({ onSubmit }: any) {
         >{loading ? 'letting you in...' : 'let me in'}</button>
 
         <div className="cat-paws" style={{ marginTop: 40 }}>
-          {CATS.map((c) => <Paw key={c.id} size={12} color={c.color} />)}
+          {CATS.map((c: any) => <Paw key={c.id} size={12} color={c.color} />)}
         </div>
         <div style={{
           marginTop: 14, textAlign: 'center', fontFamily: "'DM Mono',monospace",

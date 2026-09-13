@@ -9,11 +9,14 @@
    2. At the top of this file add:   import boris from './assets/cats/boris.jpg'
    3. Find the  photo: null  you want to fill and write  photo: boris
    Any  photo: null  shows a grey placeholder box, so nothing breaks.
+   Once a real photo is in, tapping it opens it full-screen.
    ════════════════════════════════════════════════════════════════ */
 
 export type Photo = string | null;
 
 /* ─── 01 · THE GANG ────────────────────────────────────────────── */
+/* Tap a name at the top of the section to switch cards.
+   The first cat in this list is the one shown by default.        */
 
 export const GANG_INTRO =
   "Here's all you need about the gang";
@@ -104,7 +107,7 @@ export const CATS = [
 
 export const ROUTINE = {
   note: 'Roughly two visits a day — morning around 8:00, evening around 18:00. Nothing here is rigid, it is just what we do.',
-  morning: [
+  steps: [
     {
       title: 'Come in slowly',
       detail:
@@ -113,46 +116,22 @@ export const ROUTINE = {
     {
       title: 'Feed everyone',
       detail:
-        'Wet food all round. Boris eats in the fireplace room so nobody raids his bowl. Top up the dry food jars on the counter if they look low.',
+        'Wet food all round, and Boris eats in the fireplace room so nobody raids his bowl. In the morning he also gets his Gelenk paste off your finger. In the evening Chapo gets a soup. Top up the dry food jars on the counter if they look low — “Where everything lives” further down shows where the refills are.',
     },
     {
       title: 'Fresh water',
       detail:
-        'Clean cup, fresh water, every visit. Sora will tip it over if it has been sitting.',
+        'Once a day is enough. Both cups get a rinse and fresh water — Sora will tip hers over if it has been sitting.',
     },
     {
-      title: 'Litter',
+      title: 'Litter check',
       detail:
-        'Check the automatic box and add 2–3 purple cups of fresh sand on top.',
+        'Once a day. Empty the automatic box, then take that same litter bag through to the manual black box in the fireplace room and scoop that one into it as well. Top the automatic box back up with 2–3 purple cups of fresh sand.',
     },
     {
       title: 'Play, then a quick look around',
       detail:
-        '10–15 minutes with the wand toy. Then: dishwasher shut, thermometer above 20°, nothing wet where it should be dry.',
-    },
-  ],
-  evening: [
-    {
-      title: 'Same careful entrance',
-      detail: 'They will be even more excited in the evening. Same door rule.',
-    },
-    {
-      title: 'Feed — plus Chapo’s soup',
-      detail:
-        'Evening is when Chapo gets his soup with the calming drops. Once a day, evening only.',
-    },
-    {
-      title: 'Fresh water again',
-      detail: 'New cup, new water.',
-    },
-    {
-      title: 'Litter check',
-      detail: 'Quick check and top up the sand if it looks thin.',
-    },
-    {
-      title: 'Play, brush, hang out',
-      detail:
-        'Brushing is the thing they love most in the world. Chapo especially needs tiring out or he will bother the other two all night.',
+        '10–15 minutes with the wand toy. Then, before you leave: windows and balcony door closed, and a quick check that nobody is tucked under the balcony chairs.',
     },
   ],
   photosNote:
@@ -164,14 +143,14 @@ export const ROUTINE = {
 export const FEEDING = {
   rules: [
     {
-      level: 'alert' as const,
-      title: 'Chapo’s calming drops',
-      text: '1–2 drops of Calma into Chapo’s soup. Evening visit only, once a day, never in the morning. The bottle lives in the fridge.',
+      level: 'warn' as const,
+      title: 'The Gelenk ritual (Boris) — mornings',
+      text: 'His joint paste goes on your finger, not in a bowl. In a bowl he eats it far too fast and brings it straight back up. Mornings only.',
     },
     {
       level: 'warn' as const,
-      title: 'The Gelenk ritual (Boris)',
-      text: 'His joint paste goes on your finger, not in a bowl. In a bowl he eats it far too fast and brings it straight back up.',
+      title: 'Chapo’s soup — evenings',
+      text: 'One soup a day, in the evening, from the fridge. He likes both Felix and Gourmet and we alternate them so he does not get bored of one. If he drinks the liquid and leaves the meat, that is just him — not a worry.',
     },
     {
       level: 'info' as const,
@@ -180,45 +159,13 @@ export const FEEDING = {
     },
     {
       level: 'info' as const,
-      title: 'Boris is a critic',
-      text: 'Thunfisch, huhn and lamm: yes. Carrot + salmon and plain lachs: he will leave it. Seelachs is always the safe bet. If he leaves the last dried-up bit, that is normal — it can wait until the next visit.',
+      title: 'Boris’s wet food',
+      text: 'Thunfisch and lachs are the safe bets. If he leaves the last dried-up bit behind, that is normal — it can wait until the next visit.',
     },
     {
       level: 'info' as const,
       title: 'Water',
-      text: 'Fresh water and a clean cup every visit. Spare cups are in the cupboard. If one gets broken, the Restmüll bin is in the kitchen — and please do not worry about it, it happens constantly.',
-    },
-  ],
-  whereItLives: [
-    {
-      label: 'Dry food',
-      place: 'Kitchen counter',
-      text: 'Three labelled jars. Refill them from the bags in the entry closet.',
-      photo: null as Photo,
-    },
-    {
-      label: 'Refill bags',
-      place: 'Entry closet, hallway',
-      text: 'Spare bags of all three dry foods are tucked away in here.',
-      photo: null as Photo,
-    },
-    {
-      label: 'Wet food, soups & snacks',
-      place: 'Middle metal drawer, right of the oven',
-      text: 'Everything in one place — tins, Felix soups, treats, licks, Denta snacks.',
-      photo: null as Photo,
-    },
-    {
-      label: 'Extra dry food',
-      place: 'Metal drawer below that one',
-      text: 'Unopened packages if the jars and the entry closet both run dry.',
-      photo: null as Photo,
-    },
-    {
-      label: 'Calma drops',
-      place: 'Fridge',
-      text: 'For Chapo’s evening soup only.',
-      photo: null as Photo,
+      text: 'Both cups get fresh water once a day. The white ceramic water device only needs changing every three days. Spare cups are in the cupboard, and if one gets broken the Restmüll bin is in the kitchen — please do not worry about it, it happens constantly.',
     },
   ],
 };
@@ -232,14 +179,14 @@ export const LITTER = {
       detail: 'Check it each visit. The bag changes from the right-hand side.',
     },
     {
+      title: 'Then the black box in the fireplace room',
+      detail:
+        'That one is manual. Easiest way: use the bag you have just taken out of the automatic box and scoop this one straight into it.',
+    },
+    {
       title: 'Top up the sand daily',
       detail:
         '2–3 purple cups of fresh sand on top of the automatic box, or the layer gets too thin to work.',
-    },
-    {
-      title: 'There is a second, white box too',
-      detail:
-        'Boris uses that one. It is a comically tight fit for him and he does not care.',
     },
     {
       title: 'Sand on the floor',
@@ -251,21 +198,7 @@ export const LITTER = {
     {
       level: 'info' as const,
       title: 'Tell us before it runs out',
-      text: 'We go through roughly one pack a week. A few days’ warning is enough for us to order more — deliveries go to the neighbour, so it takes a moment.',
-    },
-  ],
-  whereItLives: [
-    {
-      label: 'Litter sacks',
-      place: 'Hallway, under the plants',
-      text: 'Please do not hesitate to add more, there is always plenty.',
-      photo: null as Photo,
-    },
-    {
-      label: 'Bags, cleaning supplies, kitchen paper',
-      place: 'The thin cabinet in the hallway',
-      text: 'Bin bags and everything else you might need is dumped in here.',
-      photo: null as Photo,
+      text: 'We go through roughly one pack a week. A few days’ warning is enough for us to order more.',
     },
   ],
 };
@@ -308,17 +241,58 @@ export const PLAY = {
       text: 'Watches from a distance and joins in when the others let him. Give him his moment in the spotlight.',
     },
   ],
-  whereItLives: [
-    {
-      label: 'Toy drawer',
-      place: 'Under the TV — third cabinet from the left, second drawer down',
-      text: 'The wand, the plush toys and the laser all live here.',
-      photo: null as Photo,
-    },
-  ],
 };
 
-/* ─── 06 · HOUSE QUIRKS & SAFETY ───────────────────────────────── */
+/* ─── 06 · WHERE EVERYTHING LIVES ──────────────────────────────── */
+/* One lookup list for the whole flat. Add a photo to any entry and
+   it becomes tappable to view full-screen.                        */
+
+export const WHERE_IT_LIVES = [
+  {
+    label: 'Dry food',
+    place: 'Kitchen counter',
+    text: 'Three labelled jars. Refill them from the bags in the entry closet.',
+    photo: null as Photo,
+  },
+  {
+    label: 'Refill bags',
+    place: 'Entry closet, hallway',
+    text: 'Spare bags of all three dry foods are tucked away in here.',
+    photo: null as Photo,
+  },
+  {
+    label: 'Wet food, soups & snacks',
+    place: 'Middle metal drawer, right of the oven',
+    text: 'Everything in one place — tins, soups, treats, licks, Denta snacks.',
+    photo: null as Photo,
+  },
+  {
+    label: 'Extra dry food',
+    place: 'Metal drawer below that one',
+    text: 'Unopened packages if the jars and the entry closet both run dry.',
+    photo: null as Photo,
+  },
+  {
+    label: 'Extra litter',
+    place: 'Right under the plants at the entrance',
+    text: 'Please do not hesitate to add more, there is always plenty.',
+    photo: null as Photo,
+  },
+  {
+    label: 'Cat toys',
+    place: 'Left side of the TV console',
+    text: 'It has a printed label on it. The wand, the plush toys and the laser all live here.',
+    photo: null as Photo,
+  },
+  {
+    label: 'Bags, cleaning supplies, kitchen paper',
+    place: 'The thin cabinet in the hallway',
+    text: 'Bin bags and everything else you might need is dumped in here.',
+    photo: null as Photo,
+  },
+];
+
+/* ─── 07 · HOUSE QUIRKS & SAFETY ───────────────────────────────── */
 
 export const HOUSE = {
   intro:
@@ -331,33 +305,23 @@ export const HOUSE = {
     },
     {
       level: 'alert' as const,
+      title: 'Windows stay shut',
+      text: 'The only two things that get opened are the netted living-room window and the balcony door. Nothing else, ever. Please keep an eye on them while you are there and close both before you leave — every single time.',
+    },
+    {
+      level: 'alert' as const,
+      title: 'Check the balcony before you go',
+      text: 'They tuck themselves under the balcony chairs and are very easy to miss. Have a proper look underneath before you close the door behind you.',
+    },
+    {
+      level: 'alert' as const,
       title: 'The kitchen tap',
       text: 'Do not pull the flexible hose out too far. It catches on the pipe underneath, the pipe drops, and the kitchen floods. Moving it left and right is completely fine.',
     },
     {
-      level: 'warn' as const,
-      title: 'Dishwasher door',
-      text: 'It sits slightly open after a wash and they climb on it. If you find it ajar, push it shut.',
-    },
-    {
-      level: 'warn' as const,
-      title: 'Bathroom window',
-      text: 'In heavy rain water comes in through the gap. Make sure it is fully closed if a storm is coming.',
-    },
-    {
-      level: 'warn' as const,
-      title: 'Windows and balcony',
-      text: 'Only the net windows and the balcony door get opened, and only while someone is there.',
-    },
-    {
-      level: 'warn' as const,
-      title: 'Heating',
-      text: 'Old building, it has broken on us before. There is a digital thermometer next to the kitchen counter on the wooden beam. It should read 20° or above.',
-    },
-    {
       level: 'info' as const,
       title: 'Chapo’s climbing route',
-      text: 'He gets on top of the entry closet to hide, but he shoves the white box further right as he climbs and then cannot reach. If you see it pushed out, nudge it back in.',
+      text: 'He gets on top of the entry closet for a nap, but he shoves the white storage box further right as he climbs and then cannot reach. If you see it pushed out, nudge it back in.',
     },
     {
       level: 'info' as const,
@@ -369,33 +333,10 @@ export const HOUSE = {
       title: 'The lights are not haunted',
       text: 'Some of them switch themselves on and off on a timer. Do not be alarmed.',
     },
-    {
-      level: 'info' as const,
-      title: 'Balcony umbrella',
-      text: 'If it gets windy, tuck it under the bench so it does not fly off.',
-    },
   ],
-  plants: {
-    title: 'Plants',
-    text: 'About twice a week, roughly a cup each. The little ones by the door and in the kitchen just need a splash. The ones in the study are the dramatic ones — they go first and they go fast.',
-    photo: null as Photo,
-  },
-  packages: {
-    title: 'Parcels',
-    text: 'Deliveries go to Eugen on the second floor. If something has been delivered and it is not at the door, that is where it is.',
-  },
-  comfort: {
-    title: 'Please make yourself at home',
-    lines: [
-      'Coffee, tea, Netflix and Amazon Prime are all yours. So are the books.',
-      'The cats love the balcony open when there is a human around. They will happily sit out there with you for hours.',
-      'There are blankets and sheets by the door if you want to get comfortable.',
-      'Stay as long as you like. We mean it.',
-    ],
-  },
 };
 
-/* ─── 07 · EMERGENCY & CONTACTS ────────────────────────────────── */
+/* ─── 08 · EMERGENCY & CONTACTS ────────────────────────────────── */
 
 export const CONTACTS = {
   people: [
@@ -418,13 +359,5 @@ export const CONTACTS = {
       'We use Felmo for routine visits — a mobile vet that comes to the flat. Felmo is not an emergency service and cannot come at short notice.',
     emergency:
       'If something is urgent: message or call us first. We will find an emergency vet in the neighbourhood straight away, wherever we are. If you cannot reach us within a few minutes, go to the nearest Tierklinik and we will sort out everything else afterwards.',
-    clinic: '— add your nearest 24h Tierklinik here —',
   },
-  neighbour: {
-    title: 'Neighbour',
-    text: 'Eugen, second floor. He takes our parcels and is easy to ask if something needs a second pair of hands.',
-  },
-  address: '— add the flat address here —',
-  closing:
-    'Thank you. Genuinely. Knowing they are with someone who likes them is the only reason we can actually relax while we are away.',
 };
