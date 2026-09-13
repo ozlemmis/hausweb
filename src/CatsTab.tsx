@@ -62,6 +62,7 @@ export const CATS_CSS = `
 .cat-wheretext{font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.55;color:#555555;margin-top:6px}
 .cat-photo{background:#F5F5F5;border:1.5px dashed #E0E0E0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;overflow:hidden;padding:0}
 .cat-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cat-photo.fit img{object-fit:contain}
 .cat-photo.tappable{cursor:zoom-in;border-style:solid;border-color:#111111}
 .cat-photocap{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:#AAAAAA;text-align:center;padding:0 4px;line-height:1.4}
 .cat-lightbox{position:fixed;inset:0;background:rgba(17,17,17,.94);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;cursor:zoom-out}
@@ -152,11 +153,11 @@ function SectionHead({ num, title }: any) {
 
 /* A photo slot. When a real photo is set it becomes tappable and
    opens full-screen via onZoom. Placeholders are not tappable. */
-function PhotoSlot({ src, caption, w = 96, h = 96, onZoom }: any) {
+function PhotoSlot({ src, caption, w = 96, h = 96, onZoom, fit }: any) {
   const tappable = Boolean(src && onZoom);
   return (
     <div
-      className={`cat-photo${tappable ? ' tappable' : ''}`}
+      className={`cat-photo${tappable ? ' tappable' : ''}${fit ? ' fit' : ''}`}
       style={{ width: w, height: h }}
       onClick={tappable ? () => onZoom(src) : undefined}
       title={tappable ? 'Tap to enlarge' : undefined}
@@ -348,9 +349,10 @@ export default function CatsTab() {
             <PhotoSlot
               src={w.photo}
               caption={w.label.toLowerCase()}
-              w={92}
-              h={92}
+              w={104}
+              h={104}
               onZoom={setZoom}
+              fit
             />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="cat-wherelabel">{w.label}</div>

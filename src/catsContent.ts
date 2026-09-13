@@ -12,6 +12,17 @@
    Once a real photo is in, tapping it opens it full-screen.
    ════════════════════════════════════════════════════════════════ */
 
+import boris from './assets/cats/boris.jpg';
+import chapo from './assets/cats/chapo.jpg';
+import sora from './assets/cats/sora.jpg';
+
+import jars from './assets/cats/jars.jpg';
+import refillBags from './assets/cats/refill-bags.jpg';
+import wetFood from './assets/cats/wet-food.jpg';
+import litter from './assets/cats/litter.jpg';
+import toys from './assets/cats/toys.jpg';
+import supplies from './assets/cats/supplies.jpg';
+
 export type Photo = string | null;
 
 /* ─── 01 · THE GANG ────────────────────────────────────────────── */
@@ -31,7 +42,7 @@ export const CATS = [
     coat: 'Ginger, legs like chicken wings',
     oneLiner:
       'The lively grandpa of the house. Food is his religion and he will practice opera daily.',
-    photo: null as Photo,
+    photo: boris as Photo,
     traits: [
       'Dont take his loud meows personal, he may also meow to demand food.',
       'He has a metal paw -please be careful while holding him- and still climbs and runs like a teenager. Do not underestimate him.',
@@ -57,7 +68,7 @@ export const CATS = [
     coat: 'All black. A darkness with two eyes.',
     oneLiner:
       'Full battery, no off switch, but also the romantic one.',
-    photo: null as Photo,
+    photo: chapo as Photo,
     traits: [
       'Redecorates overnight. Socks, blankets, the laser pointer — all relocated, none returned.',
       'Can open doors so please lock outside door.',
@@ -83,7 +94,7 @@ export const CATS = [
     coat: 'Black and white, looks like a call center operator, the princess',
     oneLiner:
       'Picky about people. If she comes to you for rubs, you have genuinely been accepted.',
-    photo: null as Photo,
+    photo: sora as Photo,
     traits: [
       'She is rather distant. A purr from Sora is an achievement.',
       'Climbs onto shoulders and rides there. All 4.3 kg of her.',
@@ -251,44 +262,38 @@ export const WHERE_IT_LIVES = [
   {
     label: 'Dry food',
     place: 'Kitchen counter',
-    text: 'Three labelled jars. Refill them from the bags in the entry closet.',
-    photo: null as Photo,
+    text: 'Three labelled jars — NORMAL, BORIS and SALMON. Refill them from the bags in the entry closet.',
+    photo: jars as Photo,
   },
   {
     label: 'Refill bags',
     place: 'Entry closet, hallway',
-    text: 'Spare bags of all three dry foods are tucked away in here.',
-    photo: null as Photo,
+    text: 'Spare bags of all three dry foods are on the shelf, under the hanging clothes.',
+    photo: refillBags as Photo,
   },
   {
     label: 'Wet food, soups & snacks',
     place: 'Middle metal drawer, right of the oven',
-    text: 'Everything in one place — tins, soups, treats, licks, Denta snacks.',
-    photo: null as Photo,
-  },
-  {
-    label: 'Extra dry food',
-    place: 'Metal drawer below that one',
-    text: 'Unopened packages if the jars and the entry closet both run dry.',
-    photo: null as Photo,
+    text: 'Everything in one place — bowls, tins, soups, Gelenk sachets, Denta snacks.',
+    photo: wetFood as Photo,
   },
   {
     label: 'Extra litter',
     place: 'Right under the plants at the entrance',
     text: 'Please do not hesitate to add more, there is always plenty.',
-    photo: null as Photo,
+    photo: litter as Photo,
   },
   {
     label: 'Cat toys',
     place: 'Left side of the TV console',
-    text: 'It has a printed label on it. The wand, the plush toys and the laser all live here.',
-    photo: null as Photo,
+    text: 'The drawer with the “Cat Toys” label on it. The wand, the plush toys and the laser all live here.',
+    photo: toys as Photo,
   },
   {
     label: 'Bags, cleaning supplies, kitchen paper',
     place: 'The thin cabinet in the hallway',
-    text: 'Bin bags and everything else you might need is dumped in here.',
-    photo: null as Photo,
+    text: 'Bin bags, cloths and everything else you might need is in here.',
+    photo: supplies as Photo,
   },
 ];
 
