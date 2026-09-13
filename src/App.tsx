@@ -25,7 +25,9 @@ const GUEST_EMAIL = 'guest@hausweb.app';
 const GUEST_PATH = '/cats';
 
 const GUEST_TABS = ['cats'];
-const OWNER_TABS = ['shopping', 'scan', 'verwaltung', 'cats'];
+const OWNER_TABS = ['shopping', 'verwaltung', 'cats'];
+/* 'scan' is still a valid view — it is opened from the button beside the
+   "add an item" box in Einkauf, not from the bottom bar. */
 
 const TAB_META: any = {
   shopping:   { label: 'einkauf',    title: 'einkaufsliste' },
@@ -107,13 +109,16 @@ const IconCart = ({ active }: any) => (
   </svg>
 );
 
-const IconScan = ({ active }: any) => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" strokeWidth="1.5"
-    stroke={active?t.amber:t.textMuted} strokeLinecap="square" strokeLinejoin="miter">
-    <path d="M2 2h4M2 2v4M20 2h-4M20 2v4M2 20h4M2 20v-4M20 20h-4M20 20v-4"/>
-    <line x1="2" y1="11" x2="20" y2="11" stroke={active?t.amber:t.textMuted} strokeWidth="1.5"/>
-  </svg>
-);
+const IconScan = ({ active, color, size = 22 }: any) => {
+  const c = color || (active ? t.amber : t.textMuted);
+  return (
+    <svg width={size} height={size} viewBox="0 0 22 22" fill="none" strokeWidth="1.5"
+      stroke={c} strokeLinecap="square" strokeLinejoin="miter">
+      <path d="M2 2h4M2 2v4M20 2h-4M20 2v4M2 20h4M2 20v-4M20 20h-4M20 20v-4"/>
+      <line x1="2" y1="11" x2="20" y2="11" stroke={c} strokeWidth="1.5"/>
+    </svg>
+  );
+};
 
 const IconClipboard = ({ active }: any) => (
   <svg
@@ -213,6 +218,9 @@ const CSS = `
 .qty-btn:hover{border-color:#D4890A;background:#FFF4E0}
 .add-btn{height:36px;padding:0 32px;background:#D4890A;color:#FFF;border:1.5px solid #D4890A;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:0;transition:background .15s,border-color .15s,transform .1s;white-space:nowrap}
 .add-btn:hover{background:#8A5500;border-color:#8A5500}.add-btn:active{transform:scale(.98)}.add-btn:disabled{opacity:.25;cursor:not-allowed;transform:none}
+.scan-btn{height:48px;padding:0 15px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:1.5px solid #111111;color:#111111;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:0;transition:background .15s,border-color .15s,color .15s,transform .1s}
+.scan-btn:hover{background:#D4890A;border-color:#D4890A;color:#fff}
+.scan-btn:active{transform:scale(.98)}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1.5px solid #E0E0E0;background:#fff;color:#555555;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;border-radius:0;transition:all .12s;white-space:nowrap}
 .pill:hover{border-color:#D4890A;color:#8A5500;background:#FFF4E0}
 .pill-tag{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;color:#FFF;background:#D4890A;padding:2px 5px}
@@ -527,7 +535,7 @@ function ShoppingItemRow({ entry, profile, onBought, onUpdate, onDelete }: any) 
   );
 }
 
-function ShoppingTab({ user, profiles }: any) {
+function ShoppingTab({ user, profiles, onScan }: any) {
   const [items, setItems] = useState<any[]>([]),
     [entries, setEntries] = useState<any[]>([]);
   const [input, setInput] = useState(''),
@@ -733,16 +741,27 @@ function ShoppingTab({ user, profiles }: any) {
   return (
     <div>
       <div style={{ marginBottom: 48 }}>
-        <input
-          ref={ref}
-          className="haus-input"
-          placeholder="add an item..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e: any) =>
-            e.key === 'Enter' && input.trim() && addItem(input.trim())
-          }
-        />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            ref={ref}
+            className="haus-input"
+            placeholder="add an item..."
+            value={input}
+            style={{ flex: 1, minWidth: 0 }}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e: any) =>
+              e.key === 'Enter' && input.trim() && addItem(input.trim())
+            }
+          />
+          <button
+            className="scan-btn"
+            onClick={onScan}
+            title="Scan a barcode to add an item"
+          >
+            <IconScan color="currentColor" size={16} />
+            <span>scan</span>
+          </button>
+        </div>
         <div
           style={{
             display: 'flex',
@@ -1639,7 +1658,7 @@ function AppShell({ user, profiles, role, onSignOut, initialTab }: any) {
 
   // Safety net: if the role resolves late, never leave a guest on an owner tab.
   useEffect(() => {
-    if (!visible.includes(tab)) setTab(visible[0]);
+    if (tab !== 'scan' && !visible.includes(tab)) setTab(visible[0]);
   }, [role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const me = profiles.find((p: any) => p.id === user.id) || {
@@ -1688,7 +1707,7 @@ function AppShell({ user, profiles, role, onSignOut, initialTab }: any) {
 
       {/* Tab content */}
       <div style={{maxWidth:520,margin:"0 auto",padding:tab==="scan"?"0":"0 24px 120px"}}>
-        {tab==="shopping"&&<ShoppingTab user={user} profiles={profiles}/>}
+        {tab==="shopping"&&<ShoppingTab user={user} profiles={profiles} onScan={()=>setTab("scan")}/>}
         {tab==="verwaltung"&&<VerwaltungTab user={user} profiles={profiles}/>}
         {tab==="cats"&&<CatsTab/>}
       </div>
