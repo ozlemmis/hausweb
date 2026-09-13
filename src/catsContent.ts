@@ -16,35 +16,33 @@ export type Photo = string | null;
 /* ─── 01 · THE GANG ────────────────────────────────────────────── */
 
 export const GANG_INTRO =
-  "Three cats, three completely different personalities. Here's everything you need — and if anything is unclear, just message us, we'd rather answer twice than have you guess.";
+  "Here's all you need about the gang";
 
 export const CATS = [
   {
     id: 'boris',
     name: 'Boris',
-    nicknames: 'Boris börüş börek · Uncle Boris · Grandpa',
+    nicknames: 'Uncle Boris · Börek · Grandpa Boris',
     color: '#E07B39',
     age: '17 years old',
-    coat: 'Ginger, extremely fluffy, shaped like a loaf of bread',
+    coat: 'Ginger, legs like chicken wings',
     oneLiner:
-      'The senior of the house. Food is his religion and he will tell you about it, loudly.',
+      'The lively grandpa of the house. Food is his religion and he will practice opera daily.',
     photo: null as Photo,
     traits: [
-      'He sings. Opera, mostly, and mostly about dinner being late.',
-      'He has a metal paw and still climbs like a teenager. Do not underestimate him.',
+      'Dont take his loud meows personal, he may also meow to demand food.',
+      'He has a metal paw -please be careful while holding him- and still climbs and runs like a teenager. Do not underestimate him.',
       'Sleeps on top of the heater, in the bathroom, and inside the bedroom closet — please leave those two doors open for him.',
-      'Comes over for a cuddle, then runs off the second it becomes "too much love". Not personal.',
+      'Comes over for a cuddle, then gets going the second it becomes "too much love". He loves the balcony.',
       'First at the door to greet you. Also first to try and get through it.',
     ],
     loves: [
-      'Thunfisch, huhn and lamm wet food',
-      'Gelenk paste licked straight off your finger',
-      'Anything that could conceivably be food',
+      'Thunfisch and lachs = wet food',
+      'Gelenk paste licked straight off your finger in the morning.',
+      'Anything that could conceivably be food, please dont give him anything else',
     ],
     avoid: [
-      'Carrot + salmon — he will not touch it',
-      'Plain lachs — he left it untouched two days running',
-      'Do not put the Gelenk in a bowl. He inhales it and brings it straight back up.',
+      'Do not put the Gelenk in a bowl (he can lick bits from your finger happily). He eats it too fast and throws it back up.',
     ],
   },
   {
@@ -55,47 +53,46 @@ export const CATS = [
     age: 'The teenager',
     coat: 'All black. A darkness with two eyes.',
     oneLiner:
-      'Full battery, no off switch, and a strong personal vision for how the flat should be arranged.',
+      'Full battery, no off switch, but also the romantic one.',
     photo: null as Photo,
     traits: [
       'Redecorates overnight. Socks, blankets, the laser pointer — all relocated, none returned.',
-      'Opens doors. Bites open packages. Takes things that are not his.',
-      'Sleeps on necks. He misses us the most when we are away, so he needs the most attention.',
-      'Climbs on top of the entry closet to hide (see House quirks — he needs a small favour up there).',
-      'Will make a run for the front door. Every single time.',
+      'Can open doors so please lock outside door.',
+      'Sleeps on your neck when he feels close to you. He misses us the most when we are away, so he needs the most attention.',
+      'Climbs on top of the entry closet to hide nap.',
     ],
     loves: [
-      'Felix fish soups',
+      'Gourmet or Felix fish soups once a day',
       'The orange Denta snacks, as a reward after playing',
-      'The wand toy and your undivided attention',
+      'Playtime: The wand toy and your undivided attention',
     ],
     avoid: [
       'Sometimes he drinks the soup and leaves the meat behind — that is normal for him, not a worry',
-      'He winds Sora up. Usually play. If it stops sounding playful, break it up.',
+      'He annoys Sora while he picks playful fight. If it stops sounding playful, break the fight up please.',
     ],
   },
   {
     id: 'sora',
     name: 'Sora',
-    nicknames: 'Sora Maria',
+    nicknames: 'Sora Maria · Sorito',
     color: '#6E7CA8',
-    age: 'The mastermind',
-    coat: '4.3 kg of pure opinion',
+    age: 'The evil mastermind',
+    coat: 'Black and white, looks like a call center operator, the princess',
     oneLiner:
-      'Picky about people. If she comes to you, you have genuinely been accepted.',
+      'Picky about people. If she comes to you for rubs, you have genuinely been accepted.',
     photo: null as Photo,
     traits: [
-      'She does not normally let anyone but us touch her. A purr from Sora is an achievement.',
+      'She is rather distant. A purr from Sora is an achievement.',
       'Climbs onto shoulders and rides there. All 4.3 kg of her.',
       'Tips the water cup over if the water is not fresh. She has standards and she enforces them.',
-      'Broke a glass once. Showed no remorse.',
-      'Favourite spot: the bathroom window.',
-      'Gets into it with Chapo. Mostly play. Occasionally a genuine slap.',
+      'Favourite spot: the bathroom window or bedroom window.',
+      'Slaps other cats when she gets a chance.',
+      'If she meows at you a lot, might be because she is missing playtime',
     ],
     loves: [
       'The wand toy — she waits her turn and then goes airborne',
-      'Being brushed. She will show you her belly.',
-      'Watching you do the washing up, from very close range',
+      'Being brushed.',
+      'Loves screens as you work',
     ],
     avoid: [
       'Do not force contact. Let her come to you and she will, eventually.',
