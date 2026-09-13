@@ -127,7 +127,9 @@ export const ROUTINE = {
     {
       title: 'Feed everyone',
       detail:
-        'Wet food all round, and Boris eats in the fireplace room so nobody raids his bowl. In the morning he also gets his Gelenk paste off your finger. In the evening Chapo gets a soup. Top up the dry food jars on the counter if they look low — “Where everything lives” further down shows where the refills are.',
+        'Wet food all round, and Boris eats in the fireplace room so nobody raids his bowl. In the morning he also gets his Gelenk paste off your finger. In the evening Chapo gets a soup. Top up the dry food jars on the counter if they look low.',
+      jumpTo: 'where',
+      jumpLabel: 'Where everything lives',
     },
     {
       title: 'Fresh water',
@@ -138,11 +140,15 @@ export const ROUTINE = {
       title: 'Litter check',
       detail:
         'Once a day. Empty the automatic box, then take that same litter bag through to the manual black box in the fireplace room and scoop that one into it as well. Top the automatic box back up with 2–3 purple cups of fresh sand.',
+      jumpTo: 'litter',
+      jumpLabel: 'More on the litter',
     },
     {
       title: 'Play, then a quick look around',
       detail:
         '10–15 minutes with the wand toy. Then, before you leave: windows and balcony door closed, and a quick check that nobody is tucked under the balcony chairs.',
+      jumpTo: 'house',
+      jumpLabel: 'The full before-you-go list',
     },
   ],
   photosNote:

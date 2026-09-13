@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   GANG_INTRO,
   CATS,
@@ -26,44 +26,67 @@ const C = {
   green: '#1A8A4A',
 };
 
+/* The jump bar. Order here must match the sections rendered below;
+   `id` is the anchor, `label` is what shows in the bar.            */
+const SECTIONS = [
+  { id: 'gang', label: 'gang' },
+  { id: 'visit', label: 'visit' },
+  { id: 'feeding', label: 'food' },
+  { id: 'litter', label: 'litter' },
+  { id: 'play', label: 'play' },
+  { id: 'where', label: 'where' },
+  { id: 'house', label: 'safety' },
+  { id: 'contacts', label: 'help' },
+];
+
 /* ── cat-themed CSS, injected alongside the app's own ──────────── */
 export const CATS_CSS = `
-.cat-sec{margin-bottom:56px}
+.cat-jump{position:sticky;top:0;z-index:120;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1.5px solid #111111;margin:0 -24px 30px;padding:0 18px;display:flex;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.cat-jump::-webkit-scrollbar{display:none}
+.cat-jump button{flex:0 0 auto;background:none;border:none;cursor:pointer;padding:14px 11px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#AAAAAA;white-space:nowrap;position:relative;transition:color .12s}
+.cat-jump button:hover{color:#555555}
+.cat-jump button.on{color:#111111}
+.cat-jump button.on::after{content:'';position:absolute;left:11px;right:11px;bottom:0;height:2px;background:#D4890A}
+.cat-sec{margin-bottom:56px;scroll-margin-top:60px}
 .cat-sechead{display:flex;align-items:baseline;gap:12px;padding-bottom:12px;border-bottom:1.5px solid #111111;margin-bottom:24px}
 .cat-secnum{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.14em;color:#D4890A}
 .cat-sectitle{font-family:'DM Sans',sans-serif;font-size:21px;font-weight:600;letter-spacing:-.02em;color:#111111;line-height:1}
-.cat-secsub{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.65;color:#555555;margin-bottom:24px}
+.cat-sechint{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#AAAAAA;margin:-14px 0 20px;display:flex;align-items:center;gap:8px}
+.cat-secsub{font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.65;color:#555555;margin-bottom:24px}
 .cat-card{border:1.5px solid #111111;margin-bottom:16px;background:#fff}
 .cat-cardtop{display:flex;gap:14px;padding:14px;border-bottom:1px solid #E0E0E0}
 .cat-name{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:600;letter-spacing:-.03em;color:#111111;line-height:1.05}
 .cat-nick{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:#AAAAAA;margin-top:6px;line-height:1.6}
 .cat-meta{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#555555;margin-top:8px}
-.cat-one{font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.6;color:#111111;padding:14px;border-bottom:1px solid #E0E0E0;background:#FAFAFA}
+.cat-one{font-family:'DM Sans',sans-serif;font-size:15.5px;line-height:1.6;color:#111111;padding:14px;border-bottom:1px solid #E0E0E0;background:#FAFAFA}
 .cat-list{list-style:none;padding:12px 14px}
-.cat-list li{display:flex;gap:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.6;color:#555555;padding:5px 0}
-.cat-list li svg{flex-shrink:0;margin-top:4px}
+.cat-list li{display:flex;gap:9px;font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.6;color:#555555;padding:6px 0}
+.cat-list li svg{flex-shrink:0;margin-top:5px}
 .cat-cols{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid #E0E0E0}
 .cat-col{flex:1 1 200px;min-width:0;padding:12px 14px}
 .cat-col+.cat-col{border-left:1px solid #E0E0E0}
 .cat-collabel{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;margin-bottom:9px}
-.cat-colitem{font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.55;color:#555555;padding:4px 0 4px 12px;position:relative}
-.cat-colitem::before{content:'';position:absolute;left:0;top:11px;width:5px;height:1.5px;background:#AAAAAA}
-.cat-note{display:flex;gap:11px;padding:13px 14px;border:1.5px solid;margin-bottom:10px}
-.cat-note-t{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:-.01em;margin-bottom:5px}
-.cat-note-b{font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.6}
-.cat-step{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #E0E0E0}
+.cat-colitem{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.55;color:#555555;padding:5px 0 5px 12px;position:relative}
+.cat-colitem::before{content:'';position:absolute;left:0;top:12px;width:5px;height:1.5px;background:#AAAAAA}
+.cat-note{display:flex;gap:11px;padding:14px;border:1.5px solid;margin-bottom:10px}
+.cat-note-t{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;letter-spacing:-.01em;margin-bottom:5px}
+.cat-note-b{font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.6}
+.cat-step{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #E0E0E0}
 .cat-step:first-child{border-top:1px solid #E0E0E0}
 .cat-stepnum{width:26px;height:26px;flex-shrink:0;border:1.5px solid #E0E0E0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;color:#AAAAAA}
-.cat-stept{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:-.01em;color:#111111;line-height:1.35}
-.cat-stepd{font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;color:#555555;margin-top:4px}
+.cat-stept{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;letter-spacing:-.01em;color:#111111;line-height:1.35}
+.cat-stepd{font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.6;color:#555555;margin-top:5px}
+.cat-jumplink{display:inline-flex;align-items:center;gap:7px;margin-top:11px;background:none;border:1.5px solid #E0E0E0;cursor:pointer;padding:7px 12px;font-family:'DM Mono',monospace;font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#8A5500;transition:border-color .12s,background .12s}
+.cat-jumplink:hover{border-color:#D4890A;background:#FFF4E0}
 .cat-where{display:flex;gap:14px;padding:12px;border:1.5px solid #E0E0E0;margin-bottom:10px;background:#fff}
-.cat-wherelabel{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:-.01em;color:#111111}
+.cat-wherelabel{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;letter-spacing:-.01em;color:#111111}
 .cat-whereplace{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#D4890A;margin-top:4px;line-height:1.5}
-.cat-wheretext{font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.55;color:#555555;margin-top:6px}
-.cat-photo{background:#F5F5F5;border:1.5px dashed #E0E0E0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;overflow:hidden;padding:0}
+.cat-wheretext{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.55;color:#555555;margin-top:7px}
+.cat-photo{background:#F5F5F5;border:1.5px dashed #E0E0E0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;overflow:hidden;padding:0;position:relative}
 .cat-photo img{width:100%;height:100%;object-fit:cover;display:block}
 .cat-photo.fit img{object-fit:contain}
 .cat-photo.tappable{cursor:zoom-in;border-style:solid;border-color:#111111}
+.cat-zoomtag{position:absolute;right:0;bottom:0;width:22px;height:22px;background:rgba(17,17,17,.74);display:flex;align-items:center;justify-content:center;pointer-events:none}
 .cat-photocap{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:#AAAAAA;text-align:center;padding:0 4px;line-height:1.4}
 .cat-lightbox{position:fixed;inset:0;background:rgba(17,17,17,.94);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;cursor:zoom-out}
 .cat-lightbox img{max-width:100%;max-height:80vh;object-fit:contain}
@@ -77,7 +100,7 @@ export const CATS_CSS = `
 .cat-heropick.on .cat-heroname{color:#111111}
 .cat-herobar{height:3px;margin-top:6px;background:#E0E0E0}
 .cat-heropick.on .cat-herobar{height:6px}
-.cat-quote{border-left:2.5px solid #D4890A;background:#FFFDF7;padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.65;color:#555555;margin-top:18px}
+.cat-quote{border-left:2.5px solid #D4890A;background:#FFFDF7;padding:15px 16px;font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.65;color:#555555;margin-top:18px}
 .cat-contact{border:1.5px solid #111111;padding:14px;margin-bottom:10px}
 .cat-tagline{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#AAAAAA}
 .cat-paws{display:flex;gap:10px;justify-content:center;margin:6px 0}
@@ -110,6 +133,22 @@ const Paw = ({ size = 9, color = C.amber }: any) => (
   </svg>
 );
 
+/* corner mark that says "this opens bigger" */
+const IconExpand = () => (
+  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff"
+    strokeWidth="1.4" strokeLinecap="square">
+    <path d="M1 4.5V1h3.5M11 7.5V11H7.5" />
+    <path d="M1 1l3.6 3.6M11 11L7.4 7.4" />
+  </svg>
+);
+
+const IconJump = () => (
+  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke={C.amberText}
+    strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter">
+    <path d="M6 1.5v9M6 10.5L2.5 7M6 10.5L9.5 7" />
+  </svg>
+);
+
 /* Cat head logo — same construction language as HausLogo */
 export function CatLogo({ size = 64 }: any) {
   const s = size, cx = s / 2, cy = s * 0.56, r = s * 0.34;
@@ -138,6 +177,61 @@ export function CatLogo({ size = 64 }: any) {
   );
 }
 
+/* ── navigation ────────────────────────────────────────────────── */
+
+const jumpTo = (id: string) => {
+  const el = document.getElementById('s-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+/* Highlights whichever section is currently under the jump bar. */
+function useActiveSection() {
+  const [active, setActive] = useState(SECTIONS[0].id);
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const els = SECTIONS
+      .map((s) => document.getElementById('s-' + s.id))
+      .filter(Boolean) as HTMLElement[];
+    if (!els.length) return;
+    const obs = new IntersectionObserver(
+      (entries: any) => {
+        const visible = entries
+          .filter((e: any) => e.isIntersecting)
+          .sort((a: any, b: any) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length) setActive(visible[0].target.id.replace('s-', ''));
+      },
+      { rootMargin: '-60px 0px -68% 0px', threshold: 0 }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+  return active;
+}
+
+function JumpBar({ active }: any) {
+  const bar = useRef<HTMLDivElement | null>(null);
+  // keep the highlighted chip in view without moving the page itself
+  useEffect(() => {
+    const el = bar.current;
+    if (!el) return;
+    const chip = el.querySelector(`[data-chip="${active}"]`) as HTMLElement | null;
+    if (chip) el.scrollTo({ left: Math.max(0, chip.offsetLeft - 60), behavior: 'smooth' });
+  }, [active]);
+  return (
+    <div className="cat-jump" ref={bar}>
+      {SECTIONS.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          data-chip={s.id}
+          className={active === s.id ? 'on' : ''}
+          onClick={() => jumpTo(s.id)}
+        >{s.label}</button>
+      ))}
+    </div>
+  );
+}
+
 /* ── primitives ────────────────────────────────────────────────── */
 
 function SectionHead({ num, title }: any) {
@@ -151,8 +245,6 @@ function SectionHead({ num, title }: any) {
   );
 }
 
-/* A photo slot. When a real photo is set it becomes tappable and
-   opens full-screen via onZoom. Placeholders are not tappable. */
 function PhotoSlot({ src, caption, w = 96, h = 96, onZoom, fit }: any) {
   const tappable = Boolean(src && onZoom);
   return (
@@ -163,7 +255,10 @@ function PhotoSlot({ src, caption, w = 96, h = 96, onZoom, fit }: any) {
       title={tappable ? 'Tap to enlarge' : undefined}
     >
       {src ? (
-        <img src={src} alt={caption} />
+        <>
+          <img src={src} alt={caption} />
+          {tappable && <span className="cat-zoomtag"><IconExpand /></span>}
+        </>
       ) : (
         <>
           <Paw size={16} color="#D8D8D8" />
@@ -200,7 +295,7 @@ function Note({ level = 'info', title, text }: any) {
   return (
     <div className="cat-note" style={{ borderColor: s.border, background: s.bg }}>
       <span style={{
-        fontFamily: "'DM Mono',monospace", fontSize: 14, fontWeight: 500,
+        fontFamily: "'DM Mono',monospace", fontSize: 15, fontWeight: 500,
         color: s.title, lineHeight: 1.4, width: 10, flexShrink: 0, textAlign: 'center',
       }}>{s.mark}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -220,6 +315,11 @@ function Steps({ items }: any) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="cat-stept">{s.title}</div>
             <div className="cat-stepd">{s.detail}</div>
+            {s.jumpTo && (
+              <button type="button" className="cat-jumplink" onClick={() => jumpTo(s.jumpTo)}>
+                <IconJump />{s.jumpLabel || 'See more'}
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -266,6 +366,7 @@ function CatCard({ cat }: any) {
 export default function CatsTab() {
   const [picked, setPicked] = useState(CATS[0].id);
   const [zoom, setZoom] = useState<string | null>(null);
+  const active = useActiveSection();
 
   const catById = (id: string) => CATS.find((c: any) => c.id === id);
   const current = catById(picked) || CATS[0];
@@ -273,9 +374,10 @@ export default function CatsTab() {
   return (
     <div>
       <Lightbox src={zoom} onClose={() => setZoom(null)} />
+      <JumpBar active={active} />
 
       {/* 01 — THE GANG */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-gang">
         <SectionHead num="01" title="the gang" />
         <div className="cat-hero">
           {CATS.map((c: any) => {
@@ -295,12 +397,13 @@ export default function CatsTab() {
             );
           })}
         </div>
+        <div className="cat-sechint"><Paw size={9} color={C.muted} /> tap a name to switch</div>
         <div className="cat-secsub">{GANG_INTRO}</div>
         <CatCard cat={current} />
       </section>
 
       {/* 02 — A VISIT IN 5 STEPS */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-visit">
         <SectionHead num="02" title="a visit in 5 steps" />
         <div className="cat-secsub">{ROUTINE.note}</div>
         <Steps items={ROUTINE.steps} />
@@ -308,25 +411,23 @@ export default function CatsTab() {
       </section>
 
       {/* 03 — FEEDING */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-feeding">
         <SectionHead num="03" title="feeding" />
         {FEEDING.rules.map((r: any, i: number) => <Note key={i} {...r} />)}
       </section>
 
       {/* 04 — LITTER */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-litter">
         <SectionHead num="04" title="litter" />
         <Steps items={LITTER.steps} />
         {LITTER.rules.map((r: any, i: number) => <Note key={i} {...r} />)}
       </section>
 
       {/* 05 — PLAY & CUDDLES */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-play">
         <SectionHead num="05" title="play & cuddles" />
         <Steps items={PLAY.general} />
-        <div className="label" style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Paw size={9} color={C.muted} /> one by one
-        </div>
+        <div className="cat-sechint"><Paw size={9} color={C.muted} /> one by one</div>
         {PLAY.perCat.map((p: any) => {
           const c = catById(p.catId);
           if (!c) return null;
@@ -342,8 +443,11 @@ export default function CatsTab() {
       </section>
 
       {/* 06 — WHERE EVERYTHING LIVES */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-where">
         <SectionHead num="06" title="where everything lives" />
+        <div className="cat-sechint">
+          <Paw size={9} color={C.muted} /> tap any photo to see it full screen
+        </div>
         {WHERE_IT_LIVES.map((w: any, i: number) => (
           <div className="cat-where" key={i}>
             <PhotoSlot
@@ -364,20 +468,20 @@ export default function CatsTab() {
       </section>
 
       {/* 07 — HOUSE QUIRKS */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-house">
         <SectionHead num="07" title="house quirks & safety" />
         <div className="cat-secsub">{HOUSE.intro}</div>
         {HOUSE.warnings.map((w: any, i: number) => <Note key={i} {...w} />)}
       </section>
 
       {/* 08 — EMERGENCY & CONTACTS */}
-      <section className="cat-sec">
+      <section className="cat-sec" id="s-contacts">
         <SectionHead num="08" title="emergency & contacts" />
 
         {CONTACTS.people.map((p: any, i: number) => (
           <div className="cat-contact" key={i}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-              <span className="cat-wherelabel" style={{ fontSize: 16 }}>{p.name}</span>
+              <span className="cat-wherelabel" style={{ fontSize: 17 }}>{p.name}</span>
               <span className="cat-tagline">{p.role}</span>
             </div>
             {p.lines.map((l: string, j: number) => (
@@ -386,8 +490,8 @@ export default function CatsTab() {
             {p.phone && (
               <a href={`tel:${p.phone}`} style={{
                 display: 'inline-block', marginTop: 10, fontFamily: "'DM Mono',monospace",
-                fontSize: 12, letterSpacing: '.06em', color: C.amber, textDecoration: 'none',
-                border: `1.5px solid ${C.amber}`, padding: '6px 12px',
+                fontSize: 13, letterSpacing: '.06em', color: C.amber, textDecoration: 'none',
+                border: `1.5px solid ${C.amber}`, padding: '8px 14px',
               }}>{p.phone}</a>
             )}
           </div>
@@ -440,7 +544,7 @@ export function GuestLoginPage({ onSubmit }: any) {
         </div>
 
         <div style={{
-          fontFamily: "'DM Sans',sans-serif", fontSize: 14.5, lineHeight: 1.65,
+          fontFamily: "'DM Sans',sans-serif", fontSize: 15, lineHeight: 1.65,
           color: C.text2, textAlign: 'center', marginBottom: 24,
         }}>
           Welcome, and thank you for looking after them.<br />
