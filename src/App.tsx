@@ -1,10 +1,53 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import CatsTab, { GuestLoginPage, IconCat, CATS_CSS } from './CatsTab';
 
 const sb = createClient(
   'https://vspgkbrbwzkjqsclddxs.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzcGdrYnJid3pranFzY2xkZHhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjAyODQsImV4cCI6MjA5MzgzNjI4NH0.z5mBjpsRDBTmA2S8H5gYEPvGQqfGEnF54RSxCcwA2hY'
 );
+
+/* ═══════════════════════════════════════════════════════════════
+   ACCESS MODEL
+   ───────────────────────────────────────────────────────────────
+   Two kinds of user:
+     owner  — Oz & Job. Sees every tab.
+     guest  — the catsitter. One shared Supabase account, one shared
+              password, no username. Sees only the tabs listed in
+              GUEST_TABS below.
+
+   To open another area to guests later, add its key to GUEST_TABS.
+   That is the only change needed in the UI — but remember the RLS
+   policies in Supabase have to allow it too.
+   ═══════════════════════════════════════════════════════════════ */
+
+const GUEST_EMAIL = 'guest@hausweb.app';
+const GUEST_PATH = '/cats';
+
+const GUEST_TABS = ['cats'];
+const OWNER_TABS = ['shopping', 'scan', 'verwaltung', 'cats'];
+
+const TAB_META: any = {
+  shopping:   { label: 'einkauf',    title: 'einkaufsliste' },
+  scan:       { label: 'scan',       title: 'scan' },
+  verwaltung: { label: 'verwaltung', title: 'verwaltung' },
+  cats:       { label: 'cats',       title: 'the cats' },
+};
+
+const onGuestPath = () =>
+  typeof window !== 'undefined' &&
+  window.location.pathname.replace(/\/+$/, '').toLowerCase() === GUEST_PATH;
+
+/* Belt and braces: a profile row marked guest OR the shared guest
+   account itself. The email check means guests are still locked down
+   correctly even before the profiles.role column exists. */
+const roleOf = (user: any, profiles: any[]) => {
+  if (!user) return null;
+  const me = profiles.find((p: any) => p.id === user.id);
+  if (me?.role === 'guest') return 'guest';
+  if (user.email && user.email.toLowerCase() === GUEST_EMAIL) return 'guest';
+  return 'owner';
+};
 
 const t: any = {
   bg: '#FFFFFF',
@@ -1587,11 +1630,27 @@ function ScanTab({ user, onGoToShopping }: any) {
   );
 }
 
-function AppShell({ user, profiles, onSignOut }: any) {
-  const [tab,setTab]=useState("shopping");
-  const me=profiles.find((p:any)=>p.id===user.id)||{id:user.id,label:"ME",color:t.amberVivid};
+function AppShell({ user, profiles, role, onSignOut, initialTab }: any) {
+  const isGuest = role === 'guest';
+  const visible = isGuest ? GUEST_TABS : OWNER_TABS;
+  const [tab, setTab] = useState(
+    initialTab && visible.includes(initialTab) ? initialTab : visible[0]
+  );
 
-  return(
+  // Safety net: if the role resolves late, never leave a guest on an owner tab.
+  useEffect(() => {
+    if (!visible.includes(tab)) setTab(visible[0]);
+  }, [role]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const me = profiles.find((p: any) => p.id === user.id) || {
+    id: user.id, label: isGuest ? 'GUEST' : 'ME', color: t.amberVivid,
+  };
+
+  const ICONS: any = {
+    shopping: IconCart, scan: IconScan, verwaltung: IconClipboard, cats: IconCat,
+  };
+
+  return (
     <div style={{minHeight:"100vh",background:tab==="scan"?"#111111":"#fff",fontFamily:"'DM Mono',monospace",color:"#111111"}}>
 
       {/* Header — hidden on scan tab */}
@@ -1599,20 +1658,26 @@ function AppShell({ user, profiles, onSignOut }: any) {
         <div style={{maxWidth:520,margin:"0 auto",padding:"40px 24px 0"}}>
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:40}}>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <HausLogo profiles={profiles} size={44}/>
+              {isGuest ? <CatLogoMark/> : <HausLogo profiles={profiles} size={44}/>}
               <div>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:28,fontWeight:300,letterSpacing:"-0.04em",color:"#111111",lineHeight:1}}>haus</div>
-                <div className="label" style={{marginTop:7}}>{tab==="shopping"?"einkaufsliste":"verwaltung"}</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:28,fontWeight:300,letterSpacing:"-0.04em",color:"#111111",lineHeight:1}}>
+                  {isGuest ? "the cats" : "haus"}
+                </div>
+                <div className="label" style={{marginTop:7}}>
+                  {isGuest ? "boris · chapo · sora" : TAB_META[tab].title}
+                </div>
               </div>
             </div>
             <div style={{textAlign:"right",paddingTop:4}}>
-              <div style={{display:"flex",alignItems:"center",gap:7,justifyContent:"flex-end",marginBottom:7}}>
-                <div className="live-dot"/><span className="label">live sync</span>
-              </div>
+              {!isGuest&&(
+                <div style={{display:"flex",alignItems:"center",gap:7,justifyContent:"flex-end",marginBottom:7}}>
+                  <div className="live-dot"/><span className="label">live sync</span>
+                </div>
+              )}
               <div style={{display:"flex",alignItems:"center",gap:7,justifyContent:"flex-end"}}>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
                   <div style={{width:7,height:7,borderRadius:"50%",background:me.color}}/>
-                  <span className="label" style={{color:"#555555"}}>{me.label}</span>
+                  <span className="label" style={{color:"#555555"}}>{isGuest?"GUEST":me.label}</span>
                 </div>
                 <button className="signout-btn" onClick={onSignOut}>out</button>
               </div>
@@ -1625,6 +1690,7 @@ function AppShell({ user, profiles, onSignOut }: any) {
       <div style={{maxWidth:520,margin:"0 auto",padding:tab==="scan"?"0":"0 24px 120px"}}>
         {tab==="shopping"&&<ShoppingTab user={user} profiles={profiles}/>}
         {tab==="verwaltung"&&<VerwaltungTab user={user} profiles={profiles}/>}
+        {tab==="cats"&&<CatsTab/>}
       </div>
 
       {/* Scan tab renders full screen */}
@@ -1639,21 +1705,40 @@ function AppShell({ user, profiles, onSignOut }: any) {
       {/* Bottom nav — hidden while scanning */}
       {tab!=="scan"&&(
         <nav className="bottom-nav">
-          <button className={`nav-tab${tab==="shopping"?" active":""}`} onClick={()=>setTab("shopping")}>
-            <IconCart active={tab==="shopping"}/>
-            <span className="nav-label" style={{color:tab==="shopping"?t.amber:t.textMuted}}>einkauf</span>
-          </button>
-          <button className={`nav-tab${tab==="scan"?" active":""}`} onClick={()=>setTab("scan")}>
-            <IconScan active={tab==="scan"}/>
-            <span className="nav-label" style={{color:tab==="scan"?t.amber:t.textMuted}}>scan</span>
-          </button>
-          <button className={`nav-tab${tab==="verwaltung"?" active":""}`} onClick={()=>setTab("verwaltung")}>
-            <IconClipboard active={tab==="verwaltung"}/>
-            <span className="nav-label" style={{color:tab==="verwaltung"?t.amber:t.textMuted}}>verwaltung</span>
-          </button>
+          {visible.map((key:string)=>{
+            const Icon = ICONS[key];
+            const on = tab===key;
+            return (
+              <button key={key} className={`nav-tab${on?" active":""}`} onClick={()=>setTab(key)}>
+                <Icon active={on}/>
+                <span className="nav-label" style={{color:on?t.amber:t.textMuted}}>
+                  {TAB_META[key].label}
+                </span>
+              </button>
+            );
+          })}
         </nav>
       )}
     </div>
+  );
+}
+
+/* small cat mark for the guest header */
+function CatLogoMark() {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <path d="M8 19 L8 6 L16 12" stroke="#111" strokeWidth="1.5" strokeLinejoin="miter" strokeLinecap="square"/>
+      <path d="M36 19 L36 6 L28 12" stroke="#111" strokeWidth="1.5" strokeLinejoin="miter" strokeLinecap="square"/>
+      <circle cx="22" cy="25" r="14" stroke="#111" strokeWidth="1.5" fill="none"/>
+      <clipPath id="hcat"><circle cx="22" cy="25" r="14"/></clipPath>
+      <g clipPath="url(#hcat)">
+        <circle cx="15.5" cy="32" r="4" fill="#E07B39" opacity="0.9"/>
+        <circle cx="22" cy="32" r="4" fill="#3A3A3A" opacity="0.9"/>
+        <circle cx="28.5" cy="32" r="4" fill="#6E7CA8" opacity="0.9"/>
+      </g>
+      <rect x="16" y="22" width="1.8" height="1.8" fill="#111"/>
+      <rect x="26.2" y="22" width="1.8" height="1.8" fill="#111"/>
+    </svg>
   );
 }
 
@@ -1708,59 +1793,85 @@ function SetPasswordPage({ onDone }: any) {
                                                                                                                                                                                                                                                                                                                                                         }
 
                                                                                                                                                                                                                                                                                                                                                         export default function HausApp() {
-                                                                                                                                                                                                                                                                                                                                                          const [user,setUser]=useState<any>(null);
-                                                                                                                                                                                                                                                                                                                                                            const [profiles,setProfiles]=useState<any[]>([]);
-                                                                                                                                                                                                                                                                                                                                                              const [booting,setBooting]=useState(true);
-                                                                                                                                                                                                                                                                                                                                                                const [needsPassword,setNeedsPassword]=useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [booting, setBooting] = useState(true);
+  const [needsPassword, setNeedsPassword] = useState(false);
 
-                                                                                                                                                                                                                                                                                                                                                                  const loadProfiles=useCallback(async()=>{
-                                                                                                                                                                                                                                                                                                                                                                      const {data}=await sb.from("profiles").select("*");
-                                                                                                                                                                                                                                                                                                                                                                          if(data?.length) setProfiles(data);
-                                                                                                                                                                                                                                                                                                                                                                            },[]);
+  const guestPath = onGuestPath();
+  const role = roleOf(user, profiles);
 
-                                                                                                                                                                                                                                                                                                                                                                              useEffect(()=>{
-                                                                                                                                                                                                                                                                                                                                                                                  // Detect invite/recovery token in URL hash
-                                                                                                                                                                                                                                                                                                                                                                                      const hash = window.location.hash;
-                                                                                                                                                                                                                                                                                                                                                                                          if (hash && hash.includes("type=invite")) {
-                                                                                                                                                                                                                                                                                                                                                                                                // Exchange the token for a session
-                                                                                                                                                                                                                                                                                                                                                                                                      sb.auth.getSession().then(({ data: { session } }) => {
-                                                                                                                                                                                                                                                                                                                                                                                                              if (session) {
-                                                                                                                                                                                                                                                                                                                                                                                                                        setUser(session.user);
-                                                                                                                                                                                                                                                                                                                                                                                                                                  setNeedsPassword(true);
-                                                                                                                                                                                                                                                                                                                                                                                                                                            loadProfiles();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            setBooting(false);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        return;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
+  const loadProfiles = useCallback(async () => {
+    const { data } = await sb.from('profiles').select('*');
+    if (data?.length) setProfiles(data);
+  }, []);
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                sb.auth.getSession().then(({data:{session}}:any)=>{
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      if(session){setUser(session.user);loadProfiles();}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            setBooting(false);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                });
+  useEffect(() => {
+    // Detect invite/recovery token in URL hash
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=invite')) {
+      sb.auth.getSession().then(({ data: { session } }: any) => {
+        if (session) {
+          setUser(session.user);
+          setNeedsPassword(true);
+          loadProfiles();
+        }
+        setBooting(false);
+      });
+      return;
+    }
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    const {data:{subscription}}=sb.auth.onAuthStateChange((_:any,session:any)=>{
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          setUser(session?.user||null);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                if(session) loadProfiles();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        return ()=>subscription.unsubscribe();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          },[loadProfiles]);
+    sb.auth.getSession().then(({ data: { session } }: any) => {
+      if (session) { setUser(session.user); loadProfiles(); }
+      setBooting(false);
+    });
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            const handlePasswordSet = () => {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                setNeedsPassword(false);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  };
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_: any, session: any) => {
+      setUser(session?.user || null);
+      if (session) loadProfiles();
+    });
+    return () => subscription.unsubscribe();
+  }, [loadProfiles]);
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    return(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <style>{CSS}</style>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    {booting
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ?<div className="loading-wrap">haus is loading...</div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    :needsPassword
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ?<SetPasswordPage onDone={handlePasswordSet}/>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        :user
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ?<AppShell user={user} profiles={profiles} onSignOut={async()=>{await sb.auth.signOut();setUser(null);setProfiles([]);}}/>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                :<LoginPage onLogin={(u:any)=>{setUser(u);loadProfiles();}}/>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            );
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
+  const handlePasswordSet = () => setNeedsPassword(false);
+
+  // Guest sign-in: password only, the email is supplied by the app.
+  const guestSignIn = async (password: string) => {
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: GUEST_EMAIL,
+      password,
+    });
+    if (error) return error;
+    setUser(data.user);
+    loadProfiles();
+    return null;
+  };
+
+  const signOut = async () => {
+    await sb.auth.signOut();
+    setUser(null);
+    setProfiles([]);
+  };
+
+  return (
+    <div>
+      <style>{CSS + CATS_CSS}</style>
+      {booting
+        ? <div className="loading-wrap">haus is loading...</div>
+        : needsPassword
+          ? <SetPasswordPage onDone={handlePasswordSet}/>
+          : user
+            ? <AppShell
+                user={user}
+                profiles={profiles}
+                role={role}
+                initialTab={guestPath ? 'cats' : undefined}
+                onSignOut={signOut}
+              />
+            : guestPath
+              ? <GuestLoginPage onSubmit={guestSignIn}/>
+              : <LoginPage onLogin={(u:any)=>{setUser(u);loadProfiles();}}/>
+      }
+    </div>
+  );
+}
