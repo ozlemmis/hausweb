@@ -36,7 +36,7 @@
    
    /* Public by design — same pair already sits in the client bundle. */
    const SUPABASE_URL = 'https://vspgkbrbwzkjqsclddxs.supabase.co';
-   const SUPABASE_ANON_KEY = 'PASTE_THE_SAME_ANON_KEY_AS_IN_App.tsx';
+   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzcGdrYnJid3pranFzY2xkZHhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjAyODQsImV4cCI6MjA5MzgzNjI4NH0.z5mBjpsRDBTmA2S8H5gYEPvGQqfGEnF54RSxCcwA2hY';
    
    const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
    
