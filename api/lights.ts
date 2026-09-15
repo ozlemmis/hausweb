@@ -26,12 +26,12 @@
       Adding a device here is the whole job of adding a device.        */
    const DEVICES = [
      { key: 'dinnertable', id: '20307016f4cfa2126baf', code: 'switch_1', label: 'Dinner Table Lamp', room: 'living room' },
-     { key: 'pumpkin',       id: '70450166c82b96ca6a2b', code: 'switch_2', label: 'Pumpkin Lamp',     room: 'work room' },
-     { key: 'work/game',       id: '306786719c9c1fb78ff0', code: 'switch_3', label: 'Work/Game Desk',     room: 'work room' },
-     { key: 'bedroom',       id: '306786719c9c1fb78c90', code: 'switch_4', label: 'Bedroom Desk',     room: 'bedroom' },
-     { key: 'left',       id: '1554002648551950e48c', code: 'switch_5', label: 'Left Lamp/Charger',     room: 'living room' },
-     { key: 'right',       id: '20307016c82b96caa4f5', code: 'switch_6', label: 'Right Lamp',     room: 'living room' },
-     { key: 'balcony',       id: 'bf21a01367f36eb7d3xk2w', code: 'switch_7', label: 'Balcony Lights',     room: 'work room' },
+     { key: 'pumpkin',       id: '70450166c82b96ca6a2b', code: 'switch_1', label: 'Pumpkin Lamp',     room: 'work room' },
+     { key: 'work/game',       id: '306786719c9c1fb78ff0', code: 'switch_1', label: 'Work/Game Desk',     room: 'work room' },
+     { key: 'bedroom',       id: '306786719c9c1fb78c90', code: 'switch_1', label: 'Bedroom Desk',     room: 'bedroom' },
+     { key: 'left',       id: '1554002648551950e48c', code: 'switch_1', label: 'Left Lamp/Charger',     room: 'living room' },
+     { key: 'right',       id: '20307016c82b96caa4f5', code: 'switch_1', label: 'Right Lamp',     room: 'living room' },
+     { key: 'balcony',       id: 'bf21a01367f36eb7d3xk2w', code: 'switch_1', label: 'Balcony Lights',     room: 'work room' },
    ];
    
    const TUYA_BASE = 'https://openapi.tuyaeu.com'; // Central Europe
