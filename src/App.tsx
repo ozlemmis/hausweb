@@ -26,16 +26,16 @@ const GUEST_EMAIL = 'guest@hausweb.app';
 const GUEST_PATH = '/cats';
 
 const GUEST_TABS = ['cats', 'smarthome'];
-const OWNER_TABS = ['shopping', 'scan', 'verwaltung', 'cats', 'smarthome'];
+const OWNER_TABS = ['shopping', 'verwaltung', 'cats', 'smarthome'];
 /* 'scan' is still a valid view — it is opened from the button beside the
    "add an item" box in Einkauf, not from the bottom bar. */
 
 const TAB_META: any = {
-  shopping:   { label: 'einkauf',    title: 'einkaufsliste' },
+  shopping:   { label: 'Shop',    title: 'einkaufsliste' },
   scan:       { label: 'scan',       title: 'scan' },
-  verwaltung: { label: 'verwaltung', title: 'verwaltung' },
-  cats:       { label: 'cats',       title: 'the cats' },
-  smarthome: { label: 'licht', title: 'smart home' },
+  verwaltung: { label: 'Tasks', title: 'verwaltung' },
+  cats:       { label: 'Cats',       title: 'the cats' },
+  smarthome: { label: 'Lights', title: 'smart home' },
 };
 
 const onGuestPath = () =>
