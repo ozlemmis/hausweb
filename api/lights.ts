@@ -116,7 +116,7 @@
                return { key: d.key, label: d.label, room: d.room, on: !!hit?.value, online: true };
              } catch (e: any) {
                if (isSubscriptionError(e)) throw e;       // whole tab is down, say so
-               return { key: d.key, label: d.label, room: d.room, on: false, online: false };
+               return { key: d.key, label: d.label, room: d.room, on: false, online: false, err: `${e?.code}: ${e?.message}` };
              }
            })
          );
@@ -146,11 +146,12 @@
          return res.status(503).json({ error: 'tuya_subscription' });
        }
        console.error('lights error', e?.code, e?.message);
-       return res.status(502).json({ error: 'upstream' });
+       return res.status(502).json({ error: 'upstream', code: e?.code, msg: e?.message });
      }
    }
    
    function isSubscriptionError(e: any) {
-     const m = String(e?.message || '').toLowerCase();
-     return m.includes('permission') || m.includes('subscription') || m.includes('expired');
-   }
+    // 28841002 = "your subscription to cloud development plan has expired".
+    // Don't match on words — Tuya says "permission" for lots of things.
+    return String(e?.code) === '28841002';
+  }
