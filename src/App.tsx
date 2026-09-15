@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import CatsTab, { GuestLoginPage, IconCat, CATS_CSS } from './CatsTab';
+import SmartHomeTab, { IconBulb } from './SmartHomeTab';
 
 const sb = createClient(
   'https://vspgkbrbwzkjqsclddxs.supabase.co',
@@ -24,8 +25,8 @@ const sb = createClient(
 const GUEST_EMAIL = 'guest@hausweb.app';
 const GUEST_PATH = '/cats';
 
-const GUEST_TABS = ['cats'];
-const OWNER_TABS = ['shopping', 'verwaltung', 'cats'];
+const GUEST_TABS = ['cats', 'smarthome'];
+const OWNER_TABS = ['shopping', 'scan', 'verwaltung', 'cats', 'smarthome'];
 /* 'scan' is still a valid view — it is opened from the button beside the
    "add an item" box in Einkauf, not from the bottom bar. */
 
@@ -34,6 +35,7 @@ const TAB_META: any = {
   scan:       { label: 'scan',       title: 'scan' },
   verwaltung: { label: 'verwaltung', title: 'verwaltung' },
   cats:       { label: 'cats',       title: 'the cats' },
+  smarthome: { label: 'licht', title: 'smart home' },
 };
 
 const onGuestPath = () =>
@@ -1666,7 +1668,7 @@ function AppShell({ user, profiles, role, onSignOut, initialTab }: any) {
   };
 
   const ICONS: any = {
-    shopping: IconCart, scan: IconScan, verwaltung: IconClipboard, cats: IconCat,
+    shopping: IconCart, scan: IconScan, verwaltung: IconClipboard, cats: IconCat, smarthome: IconBulb,
   };
 
   return (
@@ -1710,6 +1712,7 @@ function AppShell({ user, profiles, role, onSignOut, initialTab }: any) {
         {tab==="shopping"&&<ShoppingTab user={user} profiles={profiles} onScan={()=>setTab("scan")}/>}
         {tab==="verwaltung"&&<VerwaltungTab user={user} profiles={profiles}/>}
         {tab==="cats"&&<CatsTab/>}
+        {tab==="smarthome"&&<SmartHomeTab sb={sb}/>}
       </div>
 
       {/* Scan tab renders full screen */}
