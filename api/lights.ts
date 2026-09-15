@@ -25,9 +25,8 @@
       label  — shown in the app.
       Adding a device here is the whole job of adding a device.        */
    const DEVICES = [
-     { key: 'wohnzimmer', id: 'PASTE_DEVICE_ID', code: 'switch_1', label: 'living room lamp', room: 'wohnzimmer' },
-     { key: 'flur',       id: 'PASTE_DEVICE_ID', code: 'switch_1', label: 'hallway lamp',     room: 'flur' },
-     { key: 'kueche',     id: 'PASTE_DEVICE_ID', code: 'switch_1', label: 'kitchen lamp',     room: 'küche' },
+     { key: 'dinnertable', id: '20307016f4cfa2126baf', code: 'switch_1', label: 'Dinner Table Lamp', room: 'living room' },
+     { key: 'pumpkin',       id: '70450166c82b96ca6a2b', code: 'switch_2', label: 'Pumpkin Lamp',     room: 'work room' },
    ];
    
    const TUYA_BASE = 'https://openapi.tuyaeu.com'; // Central Europe
