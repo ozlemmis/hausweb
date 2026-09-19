@@ -60,9 +60,9 @@ const DEVICES = [
      children once you know which socket is which.                  */
   { key: 'work/game',   id: '306786719c9c1fb78ff0', codes: ['switch_1', 'switch_2', 'switch_3'],
     label: 'Work/Game Desk', room: 'work room' },
-  { key: 'strip.1', id: '306786719c9c1fb78ff0', codes: ['switch_1'], label: 'Socket 1', room: 'work room', parent: 'strip' },
-  { key: 'strip.2', id: '306786719c9c1fb78ff0', codes: ['switch_2'], label: 'Socket 2', room: 'work room', parent: 'strip' },
-  { key: 'strip.3', id: '306786719c9c1fb78ff0', codes: ['switch_3'], label: 'Socket 3', room: 'work room', parent: 'strip' },
+  { key: 'strip.1', id: '306786719c9c1fb78ff0', codes: ['switch_1'], label: 'Socket 1', room: 'work room', parent: 'work/game' },
+  { key: 'strip.2', id: '306786719c9c1fb78ff0', codes: ['switch_2'], label: 'Socket 2', room: 'work room', parent: 'work/game' },
+  { key: 'strip.3', id: '306786719c9c1fb78ff0', codes: ['switch_3'], label: 'Socket 3', room: 'work room', parent: 'work/game' },
 ];
 
 const TUYA_BASE = 'https://openapi.tuyaeu.com'; // Central Europe
