@@ -44,7 +44,6 @@ import { createClient } from '@supabase/supabase-js';
 const DEVICES = [
   { key: 'dinnertable', id: '20307016f4cfa2126baf',  codes: ['switch_1'], label: 'Dinner Table Lamp', room: 'living room' },
   { key: 'pumpkin',     id: '70450166c82b96ca6a2b',  codes: ['switch_1'], label: 'Pumpkin Lamp',      room: 'work room' },
-  { key: 'work/game',   id: '306786719c9c1fb78ff0',  codes: ['switch_1'], label: 'Work/Game Desk',    room: 'work room' },
   { key: 'bedroom',     id: '306786719c9c1fb78c90',  codes: ['switch_1'], label: 'Bedroom Desk',      room: 'bedroom' },
   { key: 'left',        id: '1554002648551950e48c',  codes: ['switch_1'], label: 'Left Lamp/Charger', room: 'living room' },
   { key: 'right',       id: '20307016c82b96caa4f5',  codes: ['switch_1'], label: 'Right Lamp',        room: 'living room' },
@@ -60,7 +59,7 @@ const DEVICES = [
      Fill in the device id (same on all five rows) and rename the
      children once you know which socket is which.                  */
   { key: 'work/game',   id: '306786719c9c1fb78ff0', codes: ['switch_1', 'switch_2', 'switch_3', 'switch_7'],
-    label: 'Multi socket', room: 'work room' },
+    label: 'Work/Game Desk', room: 'work room' },
   { key: 'strip.1', id: '306786719c9c1fb78ff0', codes: ['switch_1'], label: 'Socket 1', room: 'work room', parent: 'strip' },
   { key: 'strip.2', id: '306786719c9c1fb78ff0', codes: ['switch_2'], label: 'Socket 2', room: 'work room', parent: 'strip' },
   { key: 'strip.3', id: '306786719c9c1fb78ff0', codes: ['switch_3'], label: 'Socket 3', room: 'work room', parent: 'strip' },
