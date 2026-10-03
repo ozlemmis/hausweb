@@ -269,8 +269,14 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
   });
 
   const filtered = selectedDate
-    ? upcoming.filter(item => item.displayDate === selectedDate)
-    : upcoming;
+  ? upcoming.filter(item => {
+      const start = item.displayDate;
+      const end = item.event.event_end_date && item.event.event_end_date > start
+        ? item.event.event_end_date
+        : start;
+      return selectedDate >= start && selectedDate <= end;
+    })
+  : upcoming;
 
   filtered.sort((a, b) => {
     const dc = a.displayDate.localeCompare(b.displayDate);
@@ -535,12 +541,12 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
           {selectedDate ? fmtDateFull(selectedDate) : 'DEMNÄCHST'}
         </span>
         {selectedDate && (
-          <button
-            onClick={() => setSelectedDate(null)}
-            style={{ background: 'none', border: `1.5px solid ${c.border}`, cursor: 'pointer', fontFamily: mono, fontSize: 9, color: c.textSub, padding: '2px 8px', letterSpacing: '0.06em' }}
-          >
-            ALLE ZEIGEN
-          </button>
+           <button
+           onClick={() => setSelectedDate(null)}
+           style={{ background: c.amberBg, border: `1.5px solid ${c.amber}`, cursor: 'pointer', fontFamily: mono, fontSize: 9, color: c.amberText, padding: '3px 10px', letterSpacing: '0.06em', fontWeight: 600 }}
+         >
+           ALLE ZEIGEN
+         </button>
         )}
       </div>
 
