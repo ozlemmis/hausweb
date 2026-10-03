@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import CatsTab, { GuestLoginPage, IconCat, CATS_CSS } from './CatsTab';
 import SmartHomeTab, { IconBulb } from './SmartHomeTab';
+import KalenderTab, { IconCalendar } from './KalenderTab';
 
 const sb = createClient(
   'https://vspgkbrbwzkjqsclddxs.supabase.co',
@@ -25,8 +26,8 @@ const sb = createClient(
 const GUEST_EMAIL = 'guest@hausweb.app';
 const GUEST_PATH = '/cats';
 
-const GUEST_TABS = ['cats', 'smarthome'];
-const OWNER_TABS = ['shopping', 'verwaltung', 'cats', 'smarthome'];
+const GUEST_TABS = ['cats', 'lights'];
+const OWNER_TABS = ['shop', 'tasks', 'events', 'cats', 'lights'];
 /* 'scan' is still a valid view — it is opened from the button beside the
    "add an item" box in Einkauf, not from the bottom bar. */
 
@@ -36,6 +37,7 @@ const TAB_META: any = {
   verwaltung: { label: 'Tasks', title: 'verwaltung' },
   cats:       { label: 'Cats',       title: 'the cats' },
   smarthome: { label: 'Lights', title: 'smart home' },
+  kalender: 'Kalender',
 };
 
 const onGuestPath = () =>
@@ -1668,7 +1670,7 @@ function AppShell({ user, profiles, role, onSignOut, initialTab }: any) {
   };
 
   const ICONS: any = {
-    shopping: IconCart, scan: IconScan, verwaltung: IconClipboard, cats: IconCat, smarthome: IconBulb,
+    shopping: IconCart, scan: IconScan, verwaltung: IconClipboard, cats: IconCat, smarthome: IconBulb, kalender: IconCalendar,
   };
 
   return (
