@@ -122,6 +122,7 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
   const [fLoc,         setFLoc]         = useState('');
   const [fDetails,     setFDetails]     = useState('');
   const [fEndDate,     setFEndDate]     = useState('');
+  const [fEndTime,     setFEndTime]     = useState('');
   const [fAnniv,       setFAnniv]       = useState(false);
   const [saving,       setSaving]       = useState(false);
 
