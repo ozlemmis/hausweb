@@ -1,6 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { SupabaseClient } from '@supabase/supabase-js';
 
+export function IconCalendar({ active }: any) {
+  const col = active ? '#D4890A' : '#AAAAAA';
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <rect x="2" y="4" width="18" height="16" stroke={col} strokeWidth="1.5"/>
+      <line x1="2" y1="9" x2="20" y2="9" stroke={col} strokeWidth="1.5"/>
+      <line x1="7" y1="2" x2="7" y2="6" stroke={col} strokeWidth="1.5"/>
+      <line x1="15" y1="2" x2="15" y2="6" stroke={col} strokeWidth="1.5"/>
+      <rect x="5" y="12" width="3" height="3" fill={col}/>
+      <rect x="9.5" y="12" width="3" height="3" fill={col}/>
+      <rect x="14" y="12" width="3" height="3" fill={col}/>
+      <rect x="5" y="16" width="3" height="3" fill={col}/>
+      <rect x="9.5" y="16" width="3" height="3" fill={col}/>
+    </svg>
+  );
+}
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface Profile { id: string; label: string; color: string; }
@@ -29,6 +46,7 @@ interface Props {
   user: any;
   profiles: Profile[];
 }
+
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
