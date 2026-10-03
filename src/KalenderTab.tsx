@@ -27,6 +27,8 @@ interface CalEvent {
   title: string;
   event_date: string;        // "YYYY-MM-DD"
   event_time: string | null; // "HH:MM:SS" or null
+  event_end_date: string | null;
+  event_end_time: string | null;
   location: string | null;
   details: string | null;
   is_anniversary: boolean;
@@ -119,6 +121,7 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
   const [fTime,        setFTime]        = useState('');
   const [fLoc,         setFLoc]         = useState('');
   const [fDetails,     setFDetails]     = useState('');
+  const [fEndDate,     setFEndDate]     = useState('');
   const [fAnniv,       setFAnniv]       = useState(false);
   const [saving,       setSaving]       = useState(false);
 
@@ -165,7 +168,7 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
 
   function openNew(date?: string) {
     setEditingEvent(null);
-    setFTitle(''); setFDate(date || today); setFTime('');
+    setFTitle(''); setFDate(date || today); setFEndDate(''); setFTime(''); setFEndTime('');
     setFLoc(''); setFDetails(''); setFAnniv(false);
     setFormOpen(true);
     setTimeout(() => titleRef.current?.focus(), 50);
@@ -173,7 +176,7 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
 
   function openEdit(ev: CalEvent) {
     setEditingEvent(ev);
-    setFTitle(ev.title); setFDate(ev.event_date); setFTime(ev.event_time || '');
+    setFTitle(ev.title); setFDate(ev.event_date); setFEndDate(ev.event_end_date || ''); setFTime(ev.event_time || ''); setFEndTime((ev as any).event_end_time || '');
     setFLoc(ev.location || ''); setFDetails(ev.details || ''); setFAnniv(ev.is_anniversary);
     setFormOpen(true);
     setExpandedKey(null);
@@ -189,6 +192,8 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
       title: fTitle.trim(),
       event_date: fDate,
       event_time: fAnniv ? null : (fTime || null),
+      event_end_date: fAnniv ? null : (fEndDate && fEndDate > fDate ? fEndDate : null),
+      event_end_time: fAnniv ? null : (fEndDate && fEndDate > fDate && fEndTime ? fEndTime : null),
       location: fAnniv ? null : (fLoc.trim() || null),
       details: fDetails.trim() || null,
       is_anniversary: fAnniv,
@@ -220,17 +225,35 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
 
   // Map date → markers for the grid view
   const gridMarkers = new Map<string, { color: string; hollow: boolean }[]>();
+
   events.forEach(ev => {
-    let dateStr: string;
+    const marker = { color: dotColor(ev), hollow: ev.is_anniversary };
     if (ev.is_anniversary) {
       const [, m, d] = ev.event_date.split('-').map(Number);
-      dateStr = `${viewYear}-${pad(m)}-${pad(d)}`;
+      const dateStr = `${viewYear}-${pad(m)}-${pad(d)}`;
+      const arr = gridMarkers.get(dateStr) || [];
+      arr.push(marker);
+      gridMarkers.set(dateStr, arr);
     } else {
-      dateStr = ev.event_date;
+      // Mark every day from start to end (clamped to current view month)
+      const start = ev.event_date;
+      const end = ev.event_end_date && ev.event_end_date > start ? ev.event_end_date : start;
+      const monthStart = `${viewYear}-${pad(viewMonth + 1)}-01`;
+      const monthEnd = `${viewYear}-${pad(viewMonth + 1)}-${pad(daysInMonth)}`;
+      const from = start < monthStart ? monthStart : start;
+      const to   = end   > monthEnd   ? monthEnd   : end;
+      if (from <= to) {
+        const cur = new Date(from + 'T00:00:00');
+        const last = new Date(to + 'T00:00:00');
+        while (cur <= last) {
+          const ds = `${cur.getFullYear()}-${pad(cur.getMonth()+1)}-${pad(cur.getDate())}`;
+          const arr = gridMarkers.get(ds) || [];
+          arr.push(marker);
+          gridMarkers.set(ds, arr);
+          cur.setDate(cur.getDate() + 1);
+        }
+      }
     }
-    const arr = gridMarkers.get(dateStr) || [];
-    arr.push({ color: dotColor(ev), hollow: ev.is_anniversary });
-    gridMarkers.set(dateStr, arr);
   });
 
   // ── Upcoming list data ─────────────────────────────────────────────────────
@@ -341,6 +364,31 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
               />
             )}
           </div>
+ {/* End date — multi-day events */}
+
+{!fAnniv && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontFamily: mono, fontSize: 11, color: c.textMuted, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>bis</span>
+              <input
+                type="date"
+                value={fEndDate}
+                min={fDate}
+                onChange={e => { setFEndDate(e.target.value); if (!e.target.value) setFEndTime(''); }}
+                style={{ flex: 2, border: `1.5px solid ${fEndDate ? c.borderStrong : c.border}`, background: '#fff', padding: '7px 10px', fontFamily: mono, fontSize: 13, color: c.text, outline: 'none' }}
+              />
+              {fEndDate && (
+                <input
+                  type="time"
+                  value={fEndTime}
+                  onChange={e => setFEndTime(e.target.value)}
+                  style={{ flex: 1, border: `1.5px solid ${c.border}`, background: '#fff', padding: '7px 10px', fontFamily: mono, fontSize: 13, color: c.text, outline: 'none' }}
+                />
+              )}
+              {fEndDate && (
+                <button onClick={() => { setFEndDate(''); setFEndTime(''); }} style={{ background: 'none', border: `1.5px solid ${c.border}`, color: c.textMuted, fontFamily: mono, fontSize: 10, padding: '7px 8px', cursor: 'pointer' }}>✕</button>
+              )}
+            </div>
+          )}
 
           {/* Location (hidden for anniversaries) */}
           {!fAnniv && (
@@ -551,8 +599,14 @@ export default function KalenderTab({ sb, user, profiles }: Props) {
 
                       {/* Date + time */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1, flexShrink: 0 }}>
-                        <span style={{ fontFamily: mono, fontSize: 10, color: isItemToday ? c.amber : c.textSub, fontWeight: isItemToday ? 700 : 400 }}>
+                       <span style={{ fontFamily: mono, fontSize: 10, color: isItemToday ? c.amber : c.textSub, fontWeight: isItemToday ? 700 : 400 }}>
                           {isItemToday ? 'HEUTE' : shortDate}
+                          {ev.event_end_date && ev.event_end_date > ev.event_date && (() => {
+                            const [ey, em, ed] = ev.event_end_date.split('-').map(Number);
+                            const edow = new Date(ey, em-1, ed).getDay();
+                            const dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+                            return <span style={{ color: c.textMuted }}> – {dayNames[edow]} {ed}. {MONTH_SHT[em-1]}</span>;
+                          })()}
                         </span>
                         {fmtTime(ev.event_time) && (
                           <span style={{ fontFamily: mono, fontSize: 10, color: c.textMuted }}>{fmtTime(ev.event_time)}</span>
